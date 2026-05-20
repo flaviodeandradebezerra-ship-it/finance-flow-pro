@@ -416,6 +416,19 @@ def web_app() -> HTMLResponse:
     return HTMLResponse(content="<h1>Finance Flow Pro</h1><p>Loading...</p>")
 
 
+@app.get("/debug/paths")
+def debug_paths() -> dict:
+    return {
+        "current_dir": _CURRENT_DIR,
+        "public_dir": PUBLIC_DIR,
+        "public_dir_exists": os.path.isdir(PUBLIC_DIR),
+        "index_path": INDEX_PATH,
+        "index_exists": os.path.isfile(INDEX_PATH),
+        "index_cache_loaded": INDEX_CACHE is not None,
+        "index_cache_size": len(INDEX_CACHE) if INDEX_CACHE else 0,
+    }
+
+
 @app.get("/api/status")
 @app.get("/status")
 def root() -> dict[str, Any]:
