@@ -9,76 +9,46 @@
   <body>
     <aside class="rail" aria-label="Navegacao principal">
       <div class="brand-mark">FF</div>
-      <button class="rail-button active" title="Painel">⌂</button>
-      <button class="rail-button" title="Fluxo">↗</button>
-      <button class="rail-button" title="Credito">$</button>
-      <button class="rail-button" title="IA">✦</button>
+      <button class="rail-button active" data-view="dashboard" aria-pressed="true" title="Painel">P</button>
+      <button class="rail-button" data-view="cashflow" aria-pressed="false" title="Fluxo de caixa">F</button>
+      <button class="rail-button" data-view="credit" aria-pressed="false" title="Credito">$</button>
+      <button class="rail-button" data-view="assistant" aria-pressed="false" title="IA">IA</button>
     </aside>
 
     <main class="shell">
       <header class="topbar">
         <section>
-          <p class="eyebrow">Finance Flow Pro</p>
-          <h1>Decisoes financeiras em uma tela</h1>
-          <p class="subtitle">Caixa, credito, alertas e acoes prioritarias para PMEs, sem navegar por varios menus.</p>
+          <p id="moduleEyebrow" class="eyebrow">Finance Flow Pro</p>
+          <h1 id="moduleTitle">Decisoes financeiras em uma tela</h1>
+          <p id="moduleSubtitle" class="subtitle">
+            Caixa, credito, alertas e acoes prioritarias para PMEs, sem navegar por varios menus.
+          </p>
         </section>
         <section class="top-actions" aria-label="Acoes rapidas">
           <button id="refreshButton" class="primary-button">Atualizar painel</button>
-          <button class="secondary-button">Open Finance</button>
+          <button id="openFinanceButton" class="secondary-button">Open Finance</button>
         </section>
       </header>
 
       <section class="quick-actions" aria-label="Atalhos">
-        <button><span>⚡</span>Resolver caixa<span>3 passos</span></button>
-        <button><span>✉</span>Cobrar clientes<span>R$ 18k</span></button>
-        <button><span>$</span>Simular credito<span>2 min</span></button>
-        <button><span>⇩</span>Enviar contador<span>PDF</span></button>
+        <button data-action="solve-cash"><span>!</span>Resolver caixa<span>3 passos</span></button>
+        <button data-action="collect"><span>@</span>Cobrar clientes<span>R$ 18k</span></button>
+        <button data-action="simulate-credit"><span>$</span>Simular credito<span>2 min</span></button>
+        <button data-action="export-accounting"><span>PDF</span>Enviar contador<span>1 clique</span></button>
       </section>
 
       <section id="metrics" class="metrics" aria-label="Indicadores principais"></section>
-
-      <section class="workspace">
-        <article class="panel cash-panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Fluxo de caixa</p>
-              <h2>Realizado + previsto</h2>
-            </div>
-            <button class="icon-button" title="Ampliar grafico">□</button>
-          </div>
-          <div id="chart" class="chart" aria-label="Grafico de fluxo"></div>
-          <div id="chips" class="chips"></div>
-        </article>
-
-        <article class="panel ai-panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Copiloto financeiro</p>
-              <h2>O que fazer agora</h2>
-            </div>
-            <span class="status-dot"></span>
-          </div>
-          <p id="aiAnswer" class="ai-answer">Analisando dados financeiros...</p>
-          <button id="askCreditButton" class="primary-button wide-button">Perguntar sobre credito</button>
-          <ul id="alerts" class="signal-list"></ul>
-        </article>
-      </section>
-
-      <section class="panel decision-panel">
-        <div class="panel-header">
-          <div>
-            <p class="eyebrow">Poucos cliques</p>
-            <h2>Fila de decisoes</h2>
-          </div>
-          <div class="segmented" role="group" aria-label="Periodo">
-            <button class="active">Hoje</button>
-            <button>Semana</button>
-            <button>Contador</button>
-          </div>
-        </div>
-        <div id="actions" class="decision-list"></div>
-      </section>
+      <section id="moduleContent" class="module-content" aria-live="polite"></section>
     </main>
+
+    <nav class="mobile-nav" aria-label="Navegacao mobile">
+      <button class="active" data-view="dashboard">Painel</button>
+      <button data-view="cashflow">Fluxo</button>
+      <button data-view="credit">Credito</button>
+      <button data-view="assistant">IA</button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="/assets/app.js"></script>
   </body>

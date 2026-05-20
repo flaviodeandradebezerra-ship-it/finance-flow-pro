@@ -6,3 +6,7 @@ venv/
 uvicorn.*.log
 .vercel/
 .vercel
+node_modules/
+module-check.png
+playwright-report/
+test-results/

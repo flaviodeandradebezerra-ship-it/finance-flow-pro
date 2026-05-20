@@ -47,6 +47,17 @@ uvicorn api_full:app --reload
 
 Depois acesse `http://127.0.0.1:8000/docs`.
 
+## Testando os modulos da interface
+
+Com a API local rodando em `http://127.0.0.1:8000`:
+
+```bash
+npm install
+npm run test:e2e
+```
+
+O teste clica nos modulos Painel, Fluxo, Credito e IA e valida se a tela principal troca corretamente.
+
 ## Proximos passos recomendados
 
 - Conectar Pluggy/Open Finance para importar contas, saldos e transacoes.
