@@ -25,6 +25,18 @@ PUBLIC_DIR = os.path.join(_CURRENT_DIR, "public")
 if not os.path.isdir(PUBLIC_DIR):
     PUBLIC_DIR = os.path.join(os.path.dirname(_CURRENT_DIR), "public")
 
+# Lê o index.html na inicialização
+INDEX_CACHE = None
+try:
+    with open(os.path.join(PUBLIC_DIR, "index.html"), "r", encoding="utf-8") as f:
+        INDEX_CACHE = f.read()
+except Exception as e:
+    print(f"Warning: Could not load index.html: {e}")
+
+# Monta arquivos estáticos em /api/assets (não-conflitante)
+if os.path.isdir(PUBLIC_DIR):
+    app.mount("/api/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
+
 
 class Movimento(BaseModel):
     data: date | None = None
@@ -384,6 +396,15 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
 
 
 
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def web_app() -> HTMLResponse | dict:
+    if INDEX_CACHE:
+        # Replace asset paths in the HTML
+        html = INDEX_CACHE.replace("/assets/", "/api/assets/")
+        return HTMLResponse(content=html)
+    return status()
+
+
 @app.get("/api/status")
 @app.get("/status")
 def root() -> dict[str, Any]:
@@ -511,9 +532,3 @@ def assistente_financeiro(payload: AssistenteRequest) -> dict[str, Any]:
         "contexto": resumo,
         "proximas_acoes": analise_atual["proximas_acoes"],
     }
-
-
-# Mount static files on the root path - MUST be last!
-# This serves index.html for SPA routing and handles 404s
-if os.path.isdir(PUBLIC_DIR):
-    app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="static")
