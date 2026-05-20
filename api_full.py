@@ -43,6 +43,147 @@ class OpenFinanceConsent(BaseModel):
     finalidade: str = Field(default="gestao financeira empresarial")
 
 
+class CreditSimulationRequest(BaseModel):
+    amount: float = Field(gt=0)
+    rate: float = Field(ge=0)
+    rate_period: Literal["monthly", "annual"] = "monthly"
+    rate_type: Literal["prefixada", "posfixada"] = "prefixada"
+    index: Literal["none", "ipca", "igpm", "tr", "poupanca", "selic", "cdi", "legal"] = "none"
+    amortization: Literal["price", "sac", "estruturada", "personalizada"] = "price"
+    months: int = Field(gt=0)
+    grace: int = Field(ge=0)
+    extension: int = Field(ge=0)
+    iof: float = Field(ge=0)
+    fees: float = Field(ge=0)
+    insurance: float = Field(ge=0)
+    custom_schedule: list[float] = Field(default_factory=list)
+
+
+def _credit_index_rate(name: str) -> float:
+    return {
+        "none": 0.0,
+        "ipca": 0.0032,
+        "igpm": 0.0048,
+        "tr": 0.0017,
+        "poupanca": 0.0021,
+        "selic": 0.0040,
+        "cdi": 0.0043,
+        "legal": 0.0035,
+    }.get(name, 0.0)
+
+
+def _build_credit_schedule(
+    principal: float,
+    monthly_rate: float,
+    months: int,
+    amortization: str,
+    grace: int,
+    extension: int,
+    custom_schedule: list[float] | None = None,
+) -> dict[str, Any]:
+    if custom_schedule:
+        total_months = len(custom_schedule)
+    else:
+        total_months = months + extension
+
+    schedule: list[dict[str, float]] = []
+    balance = principal
+    amort_months = max(1, total_months - grace)
+    total_interest = 0.0
+    total_payment = 0.0
+
+    if amortization in {"price", "estruturada", "personalizada"} and not custom_schedule:
+        installment = monthly_rate and balance * monthly_rate / (1 - pow(1 + monthly_rate, -amort_months)) or balance / amort_months
+    else:
+        installment = 0.0
+
+    for month in range(1, total_months + 1):
+        interest = balance * monthly_rate
+        if custom_schedule and month <= len(custom_schedule):
+            payment = custom_schedule[month - 1]
+        elif month <= grace:
+            payment = interest
+        elif amortization == "sac":
+            amortization_value = principal / amort_months
+            payment = amortization_value + interest
+        else:
+            payment = installment
+
+        if amortization == "sac":
+            amortization_value = principal / amort_months
+        elif month <= grace:
+            amortization_value = max(0.0, payment - interest)
+        else:
+            amortization_value = max(0.0, payment - interest)
+
+        if month == total_months:
+            payment = interest + balance
+            amortization_value = balance
+            balance = 0.0
+        else:
+            balance = max(0.0, balance - amortization_value)
+
+        total_interest += interest
+        total_payment += payment
+        schedule.append(
+            {
+                "month": month,
+                "payment": round(payment, 2),
+                "interest": round(interest, 2),
+                "amortization": round(amortization_value, 2),
+                "balance": round(balance, 2),
+            }
+        )
+
+    return {
+        "schedule": schedule,
+        "total_interest": round(total_interest, 2),
+        "total_payment": round(total_payment, 2),
+        "total_months": total_months,
+    }
+
+
+def _simulate_credit(payload: CreditSimulationRequest) -> dict[str, Any]:
+    nominal_rate = payload.rate / 100
+    monthly_rate = nominal_rate if payload.rate_period == "monthly" else pow(1 + nominal_rate, 1 / 12) - 1
+    index_rate = _credit_index_rate(payload.index)
+    effective_monthly_rate = monthly_rate + (index_rate if payload.rate_type == "posfixada" else 0)
+    iof_cost = payload.amount * (payload.iof / 100)
+    schedule_info = _build_credit_schedule(
+        payload.amount,
+        effective_monthly_rate,
+        payload.months,
+        payload.amortization,
+        payload.grace,
+        payload.extension,
+        payload.custom_schedule if payload.custom_schedule else None,
+    )
+    total_cost = schedule_info["total_interest"] + payload.fees + payload.insurance + round(iof_cost, 2)
+    total_amount_paid = schedule_info["total_payment"] + payload.fees + payload.insurance + round(iof_cost, 2)
+    effective_annual_rate = round((pow(1 + effective_monthly_rate, 12) - 1) * 100, 2)
+    cet_annual = round((pow(1 + total_cost / payload.amount, 12 / schedule_info["total_months"]) - 1) * 100, 2) if payload.amount and schedule_info["total_months"] else 0.0
+
+    return {
+        "amount": payload.amount,
+        "iof_cost": round(iof_cost, 2),
+        "fees": payload.fees,
+        "insurance": payload.insurance,
+        "monthly_rate": round(effective_monthly_rate * 100, 4),
+        "effective_annual_rate": effective_annual_rate,
+        "cet_annual": cet_annual,
+        "total_interest": schedule_info["total_interest"],
+        "total_payment": schedule_info["total_payment"],
+        "total_cost": round(total_cost, 2),
+        "amount_with_costs": round(payload.amount + total_cost, 2),
+        "total_months": schedule_info["total_months"],
+        "rate_type": payload.rate_type,
+        "amortization": payload.amortization,
+        "grace": payload.grace,
+        "extension": payload.extension,
+        "schedule": schedule_info["schedule"],
+    }
+
+
 DEMO_DADOS = [
     {"data": "2026-05-01", "descricao": "Vendas Pix", "tipo": "entrada", "valor": 42000, "categoria": "Receita"},
     {"data": "2026-05-03", "descricao": "Boleto cliente A", "tipo": "entrada", "valor": 18000, "categoria": "Receita"},
@@ -301,6 +442,12 @@ def open_finance_consentimento(payload: OpenFinanceConsent) -> dict[str, Any]:
 @app.post("/analise")
 def analise(dados: list[Movimento]) -> dict[str, Any]:
     return _analise_core(dados)
+
+
+@app.post("/api/credit/simulate")
+@app.post("/credit/simulate")
+def credit_simulate(payload: CreditSimulationRequest) -> dict[str, Any]:
+    return _simulate_credit(payload)
 
 
 @app.get("/api/benchmark-insights")

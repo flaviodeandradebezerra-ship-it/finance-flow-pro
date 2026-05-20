@@ -340,19 +340,202 @@ function renderCredit() {
           </div>
         </div>
         <form id="creditForm" class="form-grid">
-          <label>Valor desejado<input id="creditAmount" type="number" min="1000" value="25000" /></label>
-          <label>Taxa ao mes (%)<input id="creditRate" type="number" min="0" step="0.1" value="2.4" /></label>
-          <label>Prazo em meses<input id="creditMonths" type="number" min="1" value="12" /></label>
-          <button class="primary-button" type="submit">Calcular parcela</button>
+          <label>Valor desejado<input id="creditAmount" type="number" min="1000" value="25000" step="100" /></label>
+          <label>Taxa nominal (%)<input id="creditRate" type="number" min="0" step="0.01" value="2.4" /></label>
+          <label>Periodicidade da taxa<select id="creditRatePeriod"><option value="monthly">Mensal</option><option value="annual">Anual</option></select></label>
+          <label>Prefixada / Posfixada<select id="creditRateType"><option value="prefixada">Prefixada</option><option value="posfixada">Posfixada</option></select></label>
+          <label>Indice de correcao<select id="creditIndex"><option value="none">Sem indice</option><option value="ipca">IPCA</option><option value="igpm">IGP-M</option><option value="tr">TR</option><option value="poupanca">Poupanca</option><option value="selic">Selic</option><option value="cdi">CDI</option><option value="legal">Taxa legal</option></select></label>
+          <label>Amortizacao<select id="creditAmortization"><option value="price">Price</option><option value="sac">SAC</option><option value="estruturada">Estruturada</option><option value="personalizada">Personalizada</option></select></label>
+          <div id="customScheduleRow" style="display:none;">
+            <label>Parcelas personalizadas (R$ separados por vírgula)<textarea id="creditCustomSchedule" rows="3" placeholder="Ex: 2500, 2600, 2700, 2800"></textarea></label>
+            <p class="field-note">Informe os pagamentos por mês. Se vazio, o simulador usa uma trajectória de amortização similar ao Price.</p>
+          </div>
+          <label>Prazo de amortizacao (meses)<input id="creditMonths" type="number" min="1" value="12" /></label>
+          <label>Carencia (meses)<input id="creditGrace" type="number" min="0" value="0" /></label>
+          <label>Prorrogacao (meses)<input id="creditExtension" type="number" min="0" value="0" /></label>
+          <label>IOF (% do valor)<input id="creditIof" type="number" min="0" step="0.01" value="0.38" /></label>
+          <label>Tarifas (R$)<input id="creditFees" type="number" min="0" step="1" value="200" /></label>
+          <label>Seguros (R$)<input id="creditInsurance" type="number" min="0" step="1" value="350" /></label>
+          <button class="primary-button" type="submit">Calcular</button>
         </form>
         <div id="creditResult" class="result-box"></div>
       </article>
     </section>
   `;
 
-  document.querySelector("#creditForm").addEventListener("submit", calculateCredit);
+  const form = document.querySelector("#creditForm");
+  const amortizationSelect = form.querySelector("#creditAmortization");
+  amortizationSelect.addEventListener("change", togglePersonalizedScheduleField);
+  form.addEventListener("submit", calculateCredit);
+  form.querySelectorAll("input, select, textarea").forEach((element) => {
+    element.addEventListener("input", calculateCredit);
+  });
+  togglePersonalizedScheduleField();
   calculateCredit();
   wireDynamicButtons();
+}
+
+function togglePersonalizedScheduleField() {
+  const mode = document.querySelector("#creditAmortization")?.value;
+  const customRow = document.querySelector("#customScheduleRow");
+  if (!customRow) return;
+  customRow.style.display = mode === "personalizada" ? "block" : "none";
+}
+
+function parseCustomSchedule(raw) {
+  return raw
+    .split(/[,;\n]/)
+    .map((item) => Number(item.replace(/[^0-9.,-]/g, "").replace(",", ".")))
+    .filter((value) => Number.isFinite(value) && value > 0);
+}
+
+function creditIndexRate(indexName) {
+  const indexRates = {
+    none: 0,
+    ipca: 0.0032,
+    igpm: 0.0048,
+    tr: 0.0017,
+    poupanca: 0.0021,
+    selic: 0.0040,
+    cdi: 0.0043,
+    legal: 0.0035,
+  };
+  return indexRates[indexName] ?? 0;
+}
+
+function buildCreditSchedule(principal, monthlyRate, months, amortization, grace, extension) {
+  const totalMonths = months + extension;
+  const schedule = [];
+  let balance = principal;
+  let totalInterest = 0;
+  let totalPayment = 0;
+  const amortMonths = Math.max(1, totalMonths - grace);
+  let baseInstallment = 0;
+
+  if (amortization === "price" || amortization === "estruturada" || amortization === "personalizada") {
+    baseInstallment = monthlyRate
+      ? balance * monthlyRate / (1 - Math.pow(1 + monthlyRate, -amortMonths))
+      : balance / amortMonths;
+  }
+
+  for (let month = 1; month <= totalMonths; month += 1) {
+    let interest = balance * monthlyRate;
+    let amortizationValue = 0;
+    let payment = 0;
+
+    if (month <= grace) {
+      payment = interest;
+      amortizationValue = 0;
+    } else if (amortization === "sac") {
+      amortizationValue = principal / amortMonths;
+      payment = amortizationValue + interest;
+    } else {
+      payment = baseInstallment;
+      amortizationValue = payment - interest;
+    }
+
+    if (month === totalMonths && month <= grace) {
+      payment += balance;
+      amortizationValue = balance;
+      balance = 0;
+    } else {
+      balance = Math.max(0, balance - amortizationValue);
+    }
+
+    totalInterest += interest;
+    totalPayment += payment;
+    schedule.push({ month, payment, interest, amortization: amortizationValue, balance });
+  }
+
+  return { schedule, totalInterest, totalPayment, totalMonths };
+}
+
+async function calculateCredit(event) {
+  if (event) event.preventDefault();
+
+  const amount = Number(document.querySelector("#creditAmount")?.value ?? 0);
+  const rate = Number(document.querySelector("#creditRate")?.value ?? 0);
+  const ratePeriod = document.querySelector("#creditRatePeriod")?.value;
+  const rateType = document.querySelector("#creditRateType")?.value;
+  const index = document.querySelector("#creditIndex")?.value;
+  const amortization = document.querySelector("#creditAmortization")?.value;
+  const months = Number(document.querySelector("#creditMonths")?.value ?? 1);
+  const grace = Number(document.querySelector("#creditGrace")?.value ?? 0);
+  const extension = Number(document.querySelector("#creditExtension")?.value ?? 0);
+  const iof = Number(document.querySelector("#creditIof")?.value ?? 0);
+  const fees = Number(document.querySelector("#creditFees")?.value ?? 0);
+  const insurance = Number(document.querySelector("#creditInsurance")?.value ?? 0);
+  const customSchedule = parseCustomSchedule(document.querySelector("#creditCustomSchedule")?.value ?? "");
+
+  if (amount <= 0 || months <= 0) {
+    document.querySelector("#creditResult").innerHTML = `<p class="warning">Informe valor e prazo validos para simular o credito.</p>`;
+    return;
+  }
+
+  const payload = {
+    amount,
+    rate,
+    rate_period: ratePeriod,
+    rate_type: rateType,
+    index,
+    amortization,
+    months,
+    grace,
+    extension,
+    iof,
+    fees,
+    insurance,
+    custom_schedule: amortization === "personalizada" ? customSchedule : [],
+  };
+
+  try {
+    const result = await request("/credit/simulate", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    const shortSchedule = result.schedule
+      .slice(0, 6)
+      .map(
+        (item) => `<tr><td>${item.month}</td><td>${currency.format(item.payment)}</td><td>${currency.format(item.interest)}</td><td>${currency.format(item.amortization)}</td><td>${currency.format(item.balance)}</td></tr>`,
+      )
+      .join("");
+
+    document.querySelector("#creditResult").innerHTML = `
+      <div class="result-grid">
+        <div><strong>Valor financiado</strong><span>${currency.format(result.amount)}</span></div>
+        <div><strong>Custo IOF</strong><span>${currency.format(result.iof_cost)}</span></div>
+        <div><strong>Tarifas + seguros</strong><span>${currency.format(result.fees + result.insurance)}</span></div>
+        <div><strong>Taxa efetiva mensal</strong><span>${result.monthly_rate.toFixed(4)}%</span></div>
+        <div><strong>Taxa efetiva anual</strong><span>${result.effective_annual_rate.toFixed(2)}%</span></div>
+        <div><strong>CET anual estimado</strong><span>${result.cet_annual.toFixed(2)}%</span></div>
+        <div><strong>Total de juros</strong><span>${currency.format(result.total_interest)}</span></div>
+        <div><strong>Total pago</strong><span>${currency.format(result.total_payment + result.fees + result.insurance + result.iof_cost)}</span></div>
+        <div><strong>Periodo total</strong><span>${result.total_months} meses</span></div>
+      </div>
+      <div class="result-summary">
+        <p>Simulacao ${result.rate_type === "posfixada" ? "posfixada" : "prefixada"} ${result.amortization} com ${result.grace} meses de carencia e ${result.extension} meses de prorrogacao.</p>
+        <p>${result.amortization === "personalizada" ? "Personalizada: use este modelo para examinar uma jornada de pagamento diferente. A simulacao aqui usa um fluxo similar ao Price quando nao ha parcelas customizadas." : "O simulador aplica o metodo selecionado e considera custos adicionais para mostrar o CET e a taxa efetiva."}</p>
+      </div>
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Cronograma de pagamento</p>
+            <h2>Primeiros meses</h2>
+          </div>
+        </div>
+        <div class="table-wrap compact-table">
+          <table>
+            <thead><tr><th>Mes</th><th>Parcela</th><th>Juros</th><th>Amortizacao</th><th>Saldo</th></tr></thead>
+            <tbody>${shortSchedule}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  } catch (error) {
+    document.querySelector("#creditResult").innerHTML = `<p class="warning">Erro ao calcular a simulacao. Tente novamente mais tarde.</p>`;
+    console.error(error);
+  }
 }
 
 function renderAssistant() {
@@ -461,21 +644,6 @@ async function askAssistant(question, targetSelector) {
   });
 
   if (target) target.textContent = result.resposta;
-}
-
-function calculateCredit(event) {
-  if (event) event.preventDefault();
-
-  const amount = Number(document.querySelector("#creditAmount")?.value ?? 0);
-  const rate = Number(document.querySelector("#creditRate")?.value ?? 0) / 100;
-  const months = Number(document.querySelector("#creditMonths")?.value ?? 1);
-  const monthly = rate ? (amount * rate) / (1 - Math.pow(1 + rate, -months)) : amount / months;
-  const total = monthly * months;
-
-  document.querySelector("#creditResult").innerHTML = `
-    <strong>Parcela estimada: ${currency.format(monthly)}</strong>
-    <span>Custo total aproximado: ${currency.format(total)}. Compare com a folga de caixa de ${currency.format(state.analysis.resumo.saldo_final)}.</span>
-  `;
 }
 
 function executeQuickAction(action) {

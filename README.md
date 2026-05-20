@@ -13,7 +13,10 @@ Plataforma de inteligencia financeira, contabil e credito para PMEs, com foco em
 - Dashboard executivo em uma tela: caixa, NCG, score de credito, runway, fluxo previsto/realizado e fila de decisoes.
 - Atualizacao automatica do painel, sem botao manual de refresh.
 - Acoes rapidas para os fluxos mais frequentes: novo movimento, Open Finance, cobrar clientes, simular credito e enviar relatorio ao contador.
+- Simulador de credito avancado com valor desejado, taxa prefixada/posfixada, amortizacao SAC/Price/estruturada/personalizada, carencia, prorrogacao, IOF, tarifas, seguros, CET e correcoes por indices.
 - API sem dependencia pesada para a demo, com validacao de movimentos, serie de fluxo, alertas, proximas acoes, score de credito e dados demo.
+- Endpoint de simulacao de credito `/api/credit/simulate` para calcular CET, taxa efetiva, cronograma e custos totais.
+- Suporte a amortizacao personalizada com cronograma de pagamentos definidos pelo usuario.
 - Copiloto financeiro com resposta orientada a acao, nao apenas relatorio.
 - Benchmark documentado para posicionar o produto contra Conta Azul, QuickBooks Advanced e Pluggy/Open Finance.
 - Fluxo Open Finance com consentimento, selecao individual ou em lote, escopos de dados, prazo e integracao automatica ao painel.
