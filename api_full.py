@@ -16,7 +16,14 @@ app = FastAPI(
 )
 
 # Resolve o caminho da pasta public de forma confiável
-PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
+# No Vercel, __file__ pode estar em um contexto de função serverless
+# Então usamos um diretório relativo mais explícito
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PUBLIC_DIR = os.path.join(_CURRENT_DIR, "public")
+
+# Fallback: se PUBLIC_DIR não existir, tenta um nível acima
+if not os.path.isdir(PUBLIC_DIR):
+    PUBLIC_DIR = os.path.join(os.path.dirname(_CURRENT_DIR), "public")
 
 
 class Movimento(BaseModel):
