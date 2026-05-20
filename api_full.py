@@ -8,6 +8,9 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+# Import HTML content
+from app_html import INDEX_HTML
+
 
 app = FastAPI(
     title="Finance Flow Pro FULL",
@@ -16,8 +19,7 @@ app = FastAPI(
 )
 
 # Resolve o caminho da pasta public de forma confiável
-# No Vercel, __file__ pode estar em um contexto de função serverless
-# Então usamos um diretório relativo mais explícito
+# Para arquivos estáticos, teremos um fallback via CDN no HTML
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PUBLIC_DIR = os.path.join(_CURRENT_DIR, "public")
 
@@ -25,25 +27,13 @@ PUBLIC_DIR = os.path.join(_CURRENT_DIR, "public")
 if not os.path.isdir(PUBLIC_DIR):
     PUBLIC_DIR = os.path.join(os.path.dirname(_CURRENT_DIR), "public")
 
-# Debug: print path resolution
-print(f"[DEBUG] _CURRENT_DIR: {_CURRENT_DIR}")
-print(f"[DEBUG] PUBLIC_DIR: {PUBLIC_DIR}")
-print(f"[DEBUG] PUBLIC_DIR exists: {os.path.isdir(PUBLIC_DIR)}")
+# Use INDEX_HTML from app_html module
+INDEX_CACHE = INDEX_HTML
 
-# Lê o index.html na inicialização
-INDEX_CACHE = None
-INDEX_PATH = os.path.join(PUBLIC_DIR, "index.html")
-print(f"[DEBUG] INDEX_PATH: {INDEX_PATH}")
-print(f"[DEBUG] INDEX_PATH exists: {os.path.isfile(INDEX_PATH)}")
-try:
-    with open(INDEX_PATH, "r", encoding="utf-8") as f:
-        INDEX_CACHE = f.read()
-        print(f"[DEBUG] INDEX_CACHE loaded, size: {len(INDEX_CACHE)}")
-except Exception as e:
-    print(f"[DEBUG] Error loading index.html: {e}")
+# DEBUG
+print(f"[DEBUG] Using embedded INDEX_HTML, size: {len(INDEX_CACHE) if INDEX_CACHE else 0}")
 
-# Monta arquivos estáticos em /api/assets (não-conflitante)
-# Comentado por enquanto para debug
+# Monta arquivos estáticos em /api/assets (não-conflitante) se disponível
 # if os.path.isdir(PUBLIC_DIR):
 #     app.mount("/api/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
 
@@ -408,25 +398,10 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def web_app() -> HTMLResponse:
-    if INDEX_CACHE:
-        # Replace asset paths in the HTML
-        html = INDEX_CACHE.replace("/assets/", "/api/assets/")
-        return HTMLResponse(content=html)
-    # Fallback if index.html not found
-    return HTMLResponse(content="<h1>Finance Flow Pro</h1><p>Loading...</p>")
+    html = INDEX_CACHE if INDEX_CACHE else "<h1>Finance Flow Pro</h1>"
+    return HTMLResponse(content=html)
 
 
-@app.get("/debug/paths")
-def debug_paths() -> dict:
-    return {
-        "current_dir": _CURRENT_DIR,
-        "public_dir": PUBLIC_DIR,
-        "public_dir_exists": os.path.isdir(PUBLIC_DIR),
-        "index_path": INDEX_PATH,
-        "index_exists": os.path.isfile(INDEX_PATH),
-        "index_cache_loaded": INDEX_CACHE is not None,
-        "index_cache_size": len(INDEX_CACHE) if INDEX_CACHE else 0,
-    }
 
 
 @app.get("/api/status")
