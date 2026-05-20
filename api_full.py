@@ -8,8 +8,8 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-# Import HTML content
-from app_html import INDEX_HTML
+# Import HTML content from complete HTML file
+from app_html_complete import INDEX_HTML
 
 
 app = FastAPI(

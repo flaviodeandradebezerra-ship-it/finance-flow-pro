@@ -1,0 +1,948 @@
+"""Complete HTML content for Finance Flow Pro application - Embedded for Vercel deployment."""
+
+INDEX_HTML = """<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finance Flow Pro</title>
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #f2f7f4;
+  --panel: #ffffff;
+  --ink: #17231f;
+  --muted: #60736b;
+  --line: #dce7e2;
+  --green: #126c58;
+  --green-soft: #dff3ec;
+  --gold: #c98522;
+  --blue: #285da8;
+  --violet: #6e4aa8;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body { min-height: 100vh; margin: 0; color: var(--ink); background: var(--bg); }
+
+button { border: 0; font: inherit; cursor: pointer; }
+
+.rail {
+  position: fixed; inset: 0 auto 0 0; z-index: 2; display: flex; width: 76px;
+  flex-direction: column; align-items: center; gap: 14px; padding: 20px 12px;
+  background: #fbfdfc; border-right: 1px solid var(--line);
+}
+
+.brand-mark, .rail-button {
+  display: grid; width: 44px; height: 44px; place-items: center; border-radius: 8px;
+}
+
+.brand-mark { color: white; background: var(--green); font-weight: 900; }
+
+.rail-button {
+  color: var(--muted); background: transparent; font-size: 0.86rem; font-weight: 900;
+}
+
+.rail-button.active, .rail-button:hover { color: var(--green); background: var(--green-soft); }
+
+.shell { width: min(1280px, 100%); margin-left: 76px; padding: 28px 32px 40px; }
+
+.topbar, .panel-header, .top-actions, .segmented { display: flex; align-items: center; }
+
+.topbar { justify-content: space-between; gap: 24px; }
+
+.eyebrow {
+  margin: 0 0 6px; color: var(--green); font-size: 0.78rem;
+  font-weight: 800; letter-spacing: 0; text-transform: uppercase;
+}
+
+h1, h2, p { margin-top: 0; }
+
+h1 { max-width: 760px; margin-bottom: 8px; font-size: clamp(2rem, 4vw, 3.7rem); line-height: 1; }
+
+h2 { margin-bottom: 0; font-size: 1.2rem; }
+
+.subtitle { max-width: 700px; margin-bottom: 0; color: var(--muted); font-size: 1.04rem; }
+
+.top-actions { flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+.sync-status {
+  display: inline-flex; min-height: 42px; align-items: center; padding: 0 12px;
+  color: var(--muted); background: #fbfdfc; border: 1px solid var(--line); border-radius: 8px;
+  font-size: 0.88rem; font-weight: 800;
+}
+
+.primary-button, .secondary-button {
+  min-height: 42px; padding: 0 16px; border-radius: 8px; font-weight: 800;
+}
+
+.primary-button { color: white; background: var(--green); }
+
+.secondary-button { color: var(--green); background: white; border: 1px solid var(--line); }
+
+.quick-actions {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 26px 0 16px;
+}
+
+.quick-actions button {
+  display: grid; min-height: 86px; grid-template-columns: auto 1fr; gap: 4px 10px;
+  align-items: center; padding: 16px; color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px; text-align: left; font-weight: 800;
+}
+
+.quick-actions button span:first-child { grid-row: span 2; color: var(--green); font-size: 1.35rem; }
+
+.quick-actions button span:last-child { color: var(--muted); font-size: 0.82rem; font-weight: 700; }
+
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
+.module-content { margin-top: 16px; }
+
+.metric-card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+
+.metric-card { min-height: 136px; padding: 18px; }
+
+.metric-top { display: flex; justify-content: space-between; color: var(--muted); }
+
+.metric-value { margin: 20px 0 4px; font-size: 1.8rem; font-weight: 900; }
+
+.metric-label { margin: 0; color: var(--muted); }
+
+.metric-delta { color: var(--green); font-weight: 900; }
+
+.workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.8fr); gap: 16px; margin-top: 16px; }
+
+.panel { padding: 20px; }
+
+.panel-header { justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+
+.icon-button { width: 40px; height: 40px; color: var(--green); background: var(--green-soft); border-radius: 8px; }
+
+.help-icon {
+  width: 32px; min-width: 32px; height: 32px; color: var(--green); background: var(--green-soft);
+  border: 1px solid var(--line); border-radius: 50%; font-weight: 900; cursor: pointer;
+}
+
+.help-icon:hover { background: #e6f5ee; }
+
+.help-content { padding: 10px 0; color: var(--ink); line-height: 1.6; }
+
+.decision-details { display: grid; gap: 6px; }
+
+.decision-actions { display: flex; align-items: center; gap: 8px; }
+
+.action-simulation { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
+.chart { display: flex; min-height: 236px; align-items: end; gap: 10px; padding-top: 18px; border-bottom: 1px solid var(--line); }
+
+.bar { position: relative; flex: 1; min-width: 18px; border: 0; border-radius: 6px 6px 0 0; background: var(--green); }
+
+.bar.negative { background: var(--gold); }
+
+.bar span { position: absolute; right: 0; bottom: calc(100% + 8px); left: 0; color: var(--muted); font-size: 0.72rem; text-align: center; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+.chip { padding: 8px 10px; color: var(--muted); background: #f6faf8; border: 1px solid var(--line); border-radius: 8px; font-size: 0.88rem; font-weight: 800; }
+
+.status-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); }
+
+.ai-answer { padding: 16px; color: #24342f; background: var(--green-soft); border-radius: 8px; line-height: 1.55; }
+
+.wide-button { width: 100%; margin-bottom: 12px; }
+
+.signal-list { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+
+.signal-list li, .decision-item { padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
+
+.signal-list strong, .decision-item strong { display: block; margin-bottom: 4px; }
+
+.signal-list span, .decision-item span { color: var(--muted); }
+
+.decision-panel { margin-top: 16px; }
+
+.segmented { overflow: hidden; background: #edf4f1; border-radius: 8px; }
+
+.segmented button { min-height: 36px; padding: 0 12px; color: var(--muted); background: transparent; font-weight: 800; }
+
+.segmented .active { color: white; background: var(--green); }
+
+.decision-list { display: grid; gap: 10px; }
+
+.decision-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+
+.decision-item button { min-width: 40px; height: 40px; color: var(--green); background: var(--green-soft); border-radius: 8px; }
+
+.compact-chart { min-height: 150px; margin-bottom: 18px; }
+
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; min-width: 660px; }
+
+th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+
+th { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; }
+
+.success-text { color: var(--green); font-weight: 900; }
+
+.danger-text { color: var(--gold); font-weight: 900; }
+
+.category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+.category-card {
+  min-height: 110px; padding: 14px; background: #f8fbfa; border: 1px solid var(--line); border-radius: 8px;
+}
+
+.category-card span { display: block; color: var(--muted); font-size: 0.82rem; font-weight: 800; }
+
+.category-card strong { display: block; color: var(--ink); font-size: 1.08rem; margin: 4px 0; }
+
+.category-card p { margin: 0; color: var(--green); font-weight: 900; }
+
+.score-ring {
+  display: grid; width: 160px; height: 160px; place-items: center;
+  border: 4px solid var(--green); border-radius: 50%; margin: 20px auto;
+  font-size: 3.2rem; font-weight: 900; color: var(--green);
+}
+
+.form-grid { display: grid; gap: 12px; }
+
+.form-grid label {
+  display: block; color: var(--ink); font-weight: 800; margin-bottom: 6px;
+}
+
+.form-grid input, .form-grid select, .form-grid textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 6px; font-size: 1rem; font-family: inherit;
+}
+
+.form-grid button { margin-top: 12px; }
+
+.field-note { margin: 4px 0 12px; color: var(--muted); font-size: 0.85rem; }
+
+.check-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+
+.check-row input { width: auto; margin: 0; }
+
+.result-box { margin-top: 16px; }
+
+.result-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+  background: #f8fbfa; padding: 16px; border-radius: 8px; margin-bottom: 16px;
+}
+
+.result-grid > div { border-right: 1px solid var(--line); padding-right: 12px; }
+
+.result-grid > div:nth-child(3n) { border-right: none; }
+
+.result-grid strong { display: block; color: var(--muted); font-size: 0.82rem; margin-bottom: 4px; }
+
+.result-grid span { display: block; color: var(--green); font-size: 1.3rem; font-weight: 900; }
+
+.result-summary { background: var(--green-soft); padding: 14px; border-radius: 8px; }
+
+.result-summary p { margin: 8px 0; font-size: 0.95rem; line-height: 1.55; }
+
+.warning { color: var(--gold); background: #fef5ed; padding: 12px; border-radius: 6px; }
+
+.privacy-note { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+
+.consent-steps { margin-bottom: 16px; }
+
+.consent-steps li { margin-bottom: 8px; }
+
+.bank-option { display: flex; align-items: center; gap: 10px; padding: 10px 0; cursor: pointer; }
+
+.bank-option input { margin: 0; }
+
+.bank-option span { flex: 1; }
+
+.bank-option strong { display: block; }
+
+.bank-option small { display: block; color: var(--muted); font-size: 0.85rem; }
+
+.bank-grid { display: grid; gap: 8px; margin-bottom: 12px; }
+
+fieldset { border: 1px solid var(--line); padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+
+legend { padding: 0 6px; font-weight: 800; }
+
+.modal-backdrop {
+  position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.4); z-index: 10;
+}
+
+.modal-backdrop.visible { display: flex; }
+
+.modal {
+  background: var(--panel); border-radius: 12px; max-height: 90vh; overflow-y: auto;
+  width: min(500px, 90%); max-width: 90%;
+}
+
+.modal-backdrop textarea { min-height: 80px; }
+
+.assistant-form { display: flex; flex-direction: column; gap: 12px; }
+
+.compact-table { margin-top: 12px; }
+
+.compact-list { gap: 8px; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 92px; padding: 16px 20px;
+  background: var(--green); color: white; border-radius: 8px;
+  opacity: 0; transform: translateY(100px); transition: 0.3s;
+  font-weight: 800; z-index: 11;
+}
+
+.toast.visible { opacity: 1; transform: translateY(0); }
+
+.mobile-nav { display: none; }
+
+@media (max-width: 900px) {
+  .rail { display: none; }
+  .shell { margin-left: 0; padding: 20px; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace { grid-template-columns: 1fr; }
+  .modal { width: 95%; }
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 1.8rem; }
+  .topbar { flex-direction: column; align-items: flex-start; }
+  .top-actions { width: 100%; }
+  .primary-button, .secondary-button { width: 100%; }
+  .metrics { grid-template-columns: 1fr; }
+  .quick-actions { grid-template-columns: 1fr; }
+  .quick-actions button { grid-template-columns: 1fr; }
+  .quick-actions button span:first-child { grid-row: auto; margin-bottom: 4px; }
+  
+  .mobile-nav { display: flex; gap: 0; background: var(--panel); border-top: 1px solid var(--line); position: fixed; bottom: 0; left: 0; right: 0; }
+  .mobile-nav button { flex: 1; min-height: 56px; }
+  .shell { padding-bottom: 76px; }
+  
+  .panel-header { flex-direction: column; align-items: flex-start; }
+  .segmented { width: 100%; }
+}
+  </style>
+</head>
+<body>
+  <aside class="rail" aria-label="Navegacao principal">
+    <div class="brand-mark">FF</div>
+    <button class="rail-button active" data-view="dashboard" aria-pressed="true" title="Painel">P</button>
+    <button class="rail-button" data-view="cashflow" aria-pressed="false" title="Fluxo de caixa">F</button>
+    <button class="rail-button" data-view="credit" aria-pressed="false" title="Credito">$</button>
+    <button class="rail-button" data-view="assistant" aria-pressed="false" title="IA">IA</button>
+  </aside>
+
+  <main class="shell">
+    <header class="topbar">
+      <section>
+        <p id="moduleEyebrow" class="eyebrow">Finance Flow Pro</p>
+        <h1 id="moduleTitle">Decisoes financeiras em uma tela</h1>
+        <p id="moduleSubtitle" class="subtitle">Caixa, credito, alertas e acoes prioritarias para PMEs, sem navegar por varios menus.</p>
+      </section>
+      <section class="top-actions" aria-label="Acoes rapidas">
+        <span id="syncStatus" class="sync-status">Sincronizacao automatica ativa</span>
+        <button id="openFinanceButton" class="primary-button">Open Finance</button>
+      </section>
+    </header>
+
+    <section class="quick-actions" aria-label="Atalhos">
+      <button data-action="solve-cash"><span>!</span>Resolver caixa<span>3 passos</span></button>
+      <button data-action="collect"><span>@</span>Cobrar clientes<span>R$ 18k</span></button>
+      <button data-action="simulate-credit"><span>$</span>Simular credito<span>2 min</span></button>
+      <button data-action="export-accounting"><span>PDF</span>Enviar contador<span>1 clique</span></button>
+    </section>
+
+    <section id="metrics" class="metrics" aria-label="Indicadores principais"></section>
+    <section id="moduleContent" class="module-content" aria-live="polite"></section>
+  </main>
+
+  <nav class="mobile-nav" aria-label="Navegacao mobile">
+    <button class="active" data-view="dashboard">Painel</button>
+    <button data-view="cashflow">Fluxo</button>
+    <button data-view="credit">Credito</button>
+    <button data-view="assistant">IA</button>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  
+  <div id="openFinanceModal" class="modal-backdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="openFinanceTitle">
+      <div class="panel-header" style="padding: 20px;">
+        <div>
+          <p class="eyebrow">Open Finance</p>
+          <h2 id="openFinanceTitle">Autorizar integracao bancaria</h2>
+        </div>
+        <button id="closeOpenFinance" class="icon-button" title="Fechar">X</button>
+      </div>
+
+      <ol class="consent-steps" style="padding: 0 20px;">
+        <li>Consentimento claro sobre dados, prazo e finalidade.</li>
+        <li>Autenticacao no app ou internet banking da instituicao escolhida.</li>
+        <li>Confirmacao e retorno automatico para integrar saldos e extratos.</li>
+      </ol>
+
+      <form id="openFinanceForm" class="form-grid" style="padding: 0 20px 20px;">
+        <label>Modo de integracao <button type="button" class="help-icon" data-help="Escolha se a importacao será feita por instituicao individual ou em lote para multiplos clientes." title="Ajuda">?</button><select id="openFinanceMode"><option value="individual">Individual</option><option value="lote">Em lote</option></select></label>
+
+        <fieldset>
+          <legend>Instituicoes transmissoras</legend>
+          <div id="openFinanceBanks" class="bank-grid"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dados autorizados</legend>
+          <label class="check-row"><input type="checkbox" name="scope" value="saldos" checked /> Saldos</label>
+          <label class="check-row"><input type="checkbox" name="scope" value="extratos" checked /> Extratos</label>
+          <label class="check-row"><input type="checkbox" name="scope" value="cartoes" /> Cartoes</label>
+          <label class="check-row"><input type="checkbox" name="scope" value="credito" /> Operacoes de credito</label>
+        </fieldset>
+
+        <label>Prazo do consentimento <button type="button" class="help-icon" data-help="Defina por quantos dias o consentimento permanece valido para acesso aos dados do Open Finance." title="Ajuda">?</button><select id="openFinanceTerm"><option value="90">90 dias</option><option value="180" selected>180 dias</option><option value="365">365 dias</option></select></label>
+
+        <p class="privacy-note">Voce pode cancelar o compartilhamento a qualquer momento. A integracao abaixo simula a jornada oficial ate que credenciais reais sejam configuradas.</p>
+
+        <button class="primary-button" type="submit">Autorizar e integrar</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="helpModal" class="modal-backdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="panel-header" style="padding: 20px;">
+        <div>
+          <p class="eyebrow">Ajuda</p>
+          <h2 id="helpTitle">Explicacao</h2>
+        </div>
+        <button id="closeHelpModal" class="icon-button" title="Fechar">X</button>
+      </div>
+      <div id="helpContent" class="help-content" style="padding: 0 20px 20px;"></div>
+    </section>
+  </div>
+
+  <script>
+const apiBase = "/api";
+
+const fallbackData = [
+  { data: "2026-05-01", descricao: "Vendas Pix", tipo: "entrada", valor: 42000, categoria: "Receita" },
+  { data: "2026-05-03", descricao: "Boleto cliente A", tipo: "entrada", valor: 18000, categoria: "Receita" },
+  { data: "2026-05-05", descricao: "Fornecedor materia-prima", tipo: "saida", valor: 23000, categoria: "Fornecedores" },
+  { data: "2026-05-08", descricao: "Folha de pagamento", tipo: "saida", valor: 16500, categoria: "Pessoal" },
+  { data: "2026-05-12", descricao: "Aluguel", tipo: "saida", valor: 6400, categoria: "Ocupacao" },
+  { data: "2026-05-18", descricao: "Campanha comercial", tipo: "saida", valor: 3900, categoria: "Marketing" },
+  { data: "2026-05-24", descricao: "Recebimento previsto", tipo: "entrada", valor: 26000, categoria: "Receita", previsto: true },
+  { data: "2026-05-28", descricao: "Impostos previstos", tipo: "saida", valor: 8100, categoria: "Impostos", previsto: true },
+];
+
+const fallbackOpenFinanceMovements = {
+  "banco-brasil": [
+    { data: "2026-05-06", descricao: "OF Banco do Brasil - saldo conta PJ", tipo: "entrada", valor: 12200, categoria: "Open Finance" },
+    { data: "2026-05-17", descricao: "OF Banco do Brasil - tarifa bancaria", tipo: "saida", valor: 180, categoria: "Tarifas" },
+  ],
+  itau: [
+    { data: "2026-05-09", descricao: "OF Itau - recebiveis cartao", tipo: "entrada", valor: 15700, categoria: "Receita" },
+    { data: "2026-05-19", descricao: "OF Itau - parcela capital de giro", tipo: "saida", valor: 2400, categoria: "Credito" },
+  ],
+  nubank: [
+    { data: "2026-05-11", descricao: "OF Nubank - vendas online", tipo: "entrada", valor: 8900, categoria: "Receita" },
+    { data: "2026-05-20", descricao: "OF Nubank - assinatura SaaS", tipo: "saida", valor: 620, categoria: "Tecnologia" },
+  ],
+};
+
+const moduleMeta = {
+  dashboard: { eyebrow: "Painel executivo", title: "Decisoes financeiras em uma tela", subtitle: "Caixa, credito, alertas e acoes prioritarias para PMEs, sem navegar por varios menus." },
+  cashflow: { eyebrow: "Fluxo de caixa", title: "Realizado, previsto e categorias", subtitle: "Veja onde o caixa sobe ou aperta, filtre movimentos e acompanhe as maiores saidas." },
+  credit: { eyebrow: "Credito inteligente", title: "Score explicavel e simulacao", subtitle: "Entenda o limite operacional antes de contratar credito e compare custo com folga de caixa." },
+  assistant: { eyebrow: "Copiloto financeiro", title: "Pergunte e execute a proxima acao", subtitle: "Use a IA para traduzir os numeros em tarefas objetivas para hoje." },
+};
+
+const state = {
+  view: "dashboard",
+  baseData: fallbackData,
+  openFinanceData: [],
+  data: fallbackData,
+  analysis: null,
+  participants: [],
+  syncTimer: null,
+  lastSyncAt: null,
+};
+
+const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+async function request(path, options = {}) {
+  const response = await fetch(`${apiBase}${path}`, { headers: { "Content-Type": "application/json" }, ...options });
+  if (!response.ok) throw new Error(`Falha na API: ${response.status}`);
+  return response.json();
+}
+
+async function loadDashboard() {
+  try { state.baseData = await request("/demo/dados"); }
+  catch (error) { console.warn("Usando dados locais de fallback.", error); state.baseData = fallbackData; }
+  await refreshAnalysis({ silent: true });
+  await loadOpenFinanceParticipants();
+  startAutoSync();
+}
+
+async function refreshAnalysis(options = {}) {
+  state.data = [...state.baseData, ...state.openFinanceData];
+  state.analysis = await request("/analise", { method: "POST", body: JSON.stringify(state.data) });
+  state.lastSyncAt = new Date();
+  updateSyncStatus();
+  renderView(state.view);
+  if (!options.silent) showToast("Informacoes atualizadas automaticamente.");
+}
+
+function startAutoSync() {
+  window.clearInterval(state.syncTimer);
+  state.syncTimer = window.setInterval(() => {
+    refreshAnalysis({ silent: true }).catch((error) => console.error("Falha na sincronizacao automatica", error));
+  }, 12000);
+}
+
+function updateSyncStatus() {
+  const target = document.querySelector("#syncStatus");
+  if (!target) return;
+  const time = state.lastSyncAt ? state.lastSyncAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "--:--";
+  target.textContent = `Sincronizacao automatica ativa - ${time}`;
+}
+
+async function loadOpenFinanceParticipants() {
+  try { const result = await request("/open-finance/participantes"); state.participants = result.participantes; }
+  catch (error) {
+    console.error("Falha ao carregar participantes Open Finance", error);
+    state.participants = [
+      { id: "banco-brasil", nome: "Banco do Brasil", tipo: "Obrigatorio", dados_disponiveis: ["saldos", "extratos"] },
+      { id: "itau", nome: "Itau", tipo: "Obrigatorio", dados_disponiveis: ["saldos", "extratos", "credito"] },
+      { id: "nubank", nome: "Nubank", tipo: "Participante", dados_disponiveis: ["saldos", "extratos"] },
+    ];
+  }
+  renderOpenFinanceBanks();
+}
+
+function renderView(view) {
+  state.view = view;
+  updateNavigation(view);
+  updateHeader(view);
+  if (!state.analysis) { document.querySelector("#moduleContent").innerHTML = `<article class="panel">Carregando analise...</article>`; return; }
+  renderMetrics(state.analysis.resumo);
+  const renderers = { dashboard: renderDashboard, cashflow: renderCashflow, credit: renderCredit, assistant: renderAssistant };
+  renderers[view]();
+}
+
+function updateNavigation(view) {
+  document.querySelectorAll("[data-view]").forEach((button) => {
+    const active = button.dataset.view === view;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function updateHeader(view) {
+  const meta = moduleMeta[view];
+  document.querySelector("#moduleEyebrow").textContent = meta.eyebrow;
+  document.querySelector("#moduleTitle").textContent = meta.title;
+  document.querySelector("#moduleSubtitle").textContent = meta.subtitle;
+}
+
+function renderMetrics(summary) {
+  const metrics = [
+    ["Caixa hoje", currency.format(summary.saldo_final), `${summary.lucro_percentual}% margem`, "cash"],
+    ["NCG", currency.format(summary.ncg_valor), `${summary.ncg_percentual}% receita`, "giro"],
+    ["Score credito", `${summary.score_credito}/100`, "explicavel", "score"],
+    ["Runway", `${summary.runway_dias} dias`, summary.runway_dias < 30 ? "alerta" : "ok", "dias"],
+  ];
+  document.querySelector("#metrics").innerHTML = metrics.map(([label, value, delta, icon]) => `<article class="metric-card"><div class="metric-top"><span>${icon}</span><span class="metric-delta">${delta}</span></div><div class="metric-value">${value}</div><p class="metric-label">${label}</p></article>`).join("");
+}
+
+function renderDashboard() {
+  const analysis = state.analysis;
+  document.querySelector("#moduleContent").innerHTML = `
+    <section class="workspace">
+      <article class="panel cash-panel">
+        <div class="panel-header">
+          <div><p class="eyebrow">Fluxo de caixa</p><h2>Realizado + previsto</h2></div>
+          <button class="icon-button" data-view="cashflow" title="Abrir fluxo completo">F</button>
+        </div>
+        <div id="chart" class="chart" aria-label="Grafico de fluxo"></div>
+        <div id="chips" class="chips"></div>
+      </article>
+      <article class="panel ai-panel">
+        <div class="panel-header"><div><p class="eyebrow">Copiloto financeiro</p><h2>O que fazer agora</h2></div><span class="status-dot"></span></div>
+        <p id="aiAnswer" class="ai-answer">Analisando dados financeiros...</p>
+        <button id="askCreditButton" class="primary-button wide-button">Perguntar sobre credito</button>
+        <ul id="alerts" class="signal-list"></ul>
+      </article>
+    </section>
+    <section class="panel decision-panel">
+      <div class="panel-header"><div><p class="eyebrow">Poucos cliques</p><h2>Fila de decisoes</h2></div><div class="segmented" role="group" aria-label="Periodo"><button class="active" data-period="today">Hoje</button><button data-period="week">Semana</button><button data-period="accounting">Contador</button></div></div>
+      <div id="actions" class="decision-list"></div>
+    </section>
+  `;
+  renderChart(analysis.serie_fluxo);
+  renderChips(analysis.resumo, analysis.categorias);
+  renderAlerts(analysis.alertas);
+  renderActions(analysis.proximas_acoes);
+  askAssistant("Preciso de credito?", "#aiAnswer");
+  wireDynamicButtons();
+}
+
+function renderCashflow() {
+  const analysis = state.analysis;
+  const rows = analysis.serie_fluxo.map((item) => `<tr><td>${item.data ?? "-"}</td><td>${item.descricao}</td><td>${item.previsto ? "Previsto" : "Realizado"}</td><td class="${item.fluxo < 0 ? "danger-text" : "success-text"}">${currency.format(item.fluxo)}</td><td>${currency.format(item.saldo)}</td></tr>`).join("");
+  const categories = analysis.categorias.map((item) => `<article class="category-card"><span>${item.tipo}</span><strong>${item.categoria}</strong><p>${currency.format(item.valor)}</p></article>`).join("");
+  document.querySelector("#moduleContent").innerHTML = `
+    <section class="workspace" style="grid-template-columns: 1fr;">
+      <article class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Linha do tempo</p><h2>Movimentos e saldo acumulado</h2></div><button class="secondary-button" data-action="new-entry">Novo movimento</button></div>
+        <div id="chart" class="chart compact-chart" aria-label="Grafico de fluxo"></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Descricao</th><th>Status</th><th>Fluxo</th><th>Saldo</th></tr></thead><tbody>${rows}</tbody></table></div>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Categorias</p><h2>Maiores impactos</h2></div></div>
+        <div class="category-grid">${categories}</div>
+      </article>
+    </section>
+  `;
+  renderChart(analysis.serie_fluxo);
+  wireDynamicButtons();
+}
+
+function renderCredit() {
+  const summary = state.analysis.resumo;
+  document.querySelector("#moduleContent").innerHTML = `
+    <section class="workspace" style="grid-template-columns: 1fr;">
+      <article class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Score operacional</p><h2>${summary.score_credito}/100</h2></div><button class="secondary-button" data-action="credit-report">Relatorio banco</button></div>
+        <div class="score-ring" aria-label="Score de credito">${summary.score_credito}</div>
+        <ul class="signal-list">
+          <li><strong>Fator positivo</strong><span>Margem de caixa em ${summary.lucro_percentual}%.</span></li>
+          <li><strong>Fator de atencao</strong><span>Runway atual de ${summary.runway_dias} dias.</span></li>
+          <li><strong>NCG</strong><span>${currency.format(summary.ncg_valor)} de necessidade projetada.</span></li>
+        </ul>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Simulador</p><h2>Custo estimado do credito</h2></div></div>
+        <form id="creditForm" class="form-grid">
+          <label>Valor desejado <button type="button" class="help-icon" data-help="Informe o montante que voce deseja financiar. Ex: R$ 25.000 para capital de giro ou investimento." title="Ajuda">?</button><input id="creditAmount" type="number" min="1000" value="25000" step="100" /></label>
+          <label>Taxa nominal (%) <button type="button" class="help-icon" data-help="Defina a taxa contratada pelo credito. Pode ser mensal ou anual." title="Ajuda">?</button><input id="creditRate" type="number" min="0" step="0.01" value="2.4" /></label>
+          <label>Periodicidade da taxa <button type="button" class="help-icon" data-help="Escolha se a taxa informada e mensal ou anual." title="Ajuda">?</button><select id="creditRatePeriod"><option value="monthly">Mensal</option><option value="annual">Anual</option></select></label>
+          <label>Prefixada / Posfixada <button type="button" class="help-icon" data-help="Prefixada: taxa fixa. Posfixada: taxa acrescida de indice de correcao." title="Ajuda">?</button><select id="creditRateType"><option value="prefixada">Prefixada</option><option value="posfixada">Posfixada</option></select></label>
+          <label>Indice de correcao <button type="button" class="help-icon" data-help="Seleciona o indice que corrige o saldo devedor, como IPCA, TR, Selic ou CDI." title="Ajuda">?</button><select id="creditIndex"><option value="none">Sem indice</option><option value="ipca">IPCA</option><option value="igpm">IGP-M</option><option value="tr">TR</option><option value="poupanca">Poupanca</option><option value="selic">Selic</option><option value="cdi">CDI</option><option value="legal">Taxa legal</option></select></label>
+          <label>Amortizacao <button type="button" class="help-icon" data-help="Escolha o sistema de amortizacao. Price = parcela fixa, SAC = amortizacao constante." title="Ajuda">?</button><select id="creditAmortization"><option value="price">Price</option><option value="sac">SAC</option><option value="estruturada">Estruturada</option><option value="personalizada">Personalizada</option></select></label>
+          <div id="customScheduleRow" style="display:none;"><label>Parcelas personalizadas (R$ separados por vírgula) <button type="button" class="help-icon" data-help="Informe as parcelas previstas para cada mes." title="Ajuda">?</button><textarea id="creditCustomSchedule" rows="3" placeholder="Ex: 2500, 2600, 2700, 2800"></textarea></label><p class="field-note">Informe os pagamentos por mês.</p></div>
+          <label>Prazo de amortizacao (meses) <button type="button" class="help-icon" data-help="Defina quantos meses o credito vai durar. Ex: 12, 24 ou 36 meses." title="Ajuda">?</button><input id="creditMonths" type="number" min="1" value="12" /></label>
+          <label>Carencia (meses) <button type="button" class="help-icon" data-help="Tempo em que voce paga apenas juros ou fica sem pagamento." title="Ajuda">?</button><input id="creditGrace" type="number" min="0" value="0" /></label>
+          <label>Prorrogacao (meses) <button type="button" class="help-icon" data-help="Tempo extra para pagar apos o prazo original do credito." title="Ajuda">?</button><input id="creditExtension" type="number" min="0" value="0" /></label>
+          <label>IOF base (% do valor) <button type="button" class="help-icon" data-help="IOF aplicado conforme Lei 5.143/1966: 0,38% + 0,0082% ao dia." title="Ajuda">?</button><input id="creditIof" type="number" min="0" step="0.01" value="0.38" /></label>
+          <p class="field-note">Cálculo conforme Lei 5.143/1966: 0,38% + 0,0082% ao dia sobre o saldo devedor.</p>
+          <label>Tarifas (R$) <button type="button" class="help-icon" data-help="Inclua aqui custos bancarios e tarifas administrativas." title="Ajuda">?</button><input id="creditFees" type="number" min="0" step="1" value="200" /></label>
+          <label>Seguros (R$) <button type="button" class="help-icon" data-help="Planeje seguros obrigatorios ou facultativos atrelados ao credito." title="Ajuda">?</button><input id="creditInsurance" type="number" min="0" step="1" value="350" /></label>
+          <button class="primary-button" type="submit">Calcular</button>
+        </form>
+        <div id="creditResult" class="result-box"></div>
+      </article>
+    </section>
+  `;
+  const form = document.querySelector("#creditForm");
+  form.querySelector("#creditAmortization").addEventListener("change", togglePersonalizedScheduleField);
+  form.addEventListener("submit", calculateCredit);
+  form.querySelectorAll("input, select, textarea").forEach((element) => { element.addEventListener("input", calculateCredit); });
+  togglePersonalizedScheduleField();
+  calculateCredit();
+  wireDynamicButtons();
+}
+
+function togglePersonalizedScheduleField() {
+  const mode = document.querySelector("#creditAmortization")?.value;
+  const customRow = document.querySelector("#customScheduleRow");
+  if (!customRow) return;
+  customRow.style.display = mode === "personalizada" ? "block" : "none";
+}
+
+function parseCustomSchedule(raw) {
+  return raw.split(/[,;\n]/).map((item) => Number(item.replace(/[^0-9.,-]/g, "").replace(",", "."))).filter((value) => Number.isFinite(value) && value > 0);
+}
+
+function creditIndexRate(indexName) {
+  const indexRates = { none: 0, ipca: 0.0032, igpm: 0.0048, tr: 0.0017, poupanca: 0.0021, selic: 0.0040, cdi: 0.0043, legal: 0.0035 };
+  return indexRates[indexName] ?? 0;
+}
+
+function buildCreditSchedule(principal, monthlyRate, months, amortization, grace, extension) {
+  const totalMonths = months + extension;
+  const schedule = [];
+  let balance = principal;
+  let totalInterest = 0;
+  let totalPayment = 0;
+  const amortMonths = Math.max(1, totalMonths - grace);
+  let baseInstallment = 0;
+  if (amortization === "price" || amortization === "estruturada" || amortization === "personalizada") {
+    baseInstallment = monthlyRate ? balance * monthlyRate / (1 - Math.pow(1 + monthlyRate, -amortMonths)) : balance / amortMonths;
+  }
+  for (let month = 1; month <= totalMonths; month += 1) {
+    let interest = balance * monthlyRate;
+    let amortizationValue = 0;
+    let payment = 0;
+    if (month <= grace) { payment = interest; amortizationValue = 0; }
+    else if (amortization === "sac") { amortizationValue = principal / amortMonths; payment = amortizationValue + interest; }
+    else { payment = baseInstallment; amortizationValue = payment - interest; }
+    if (month === totalMonths && month <= grace) { payment += balance; amortizationValue = balance; balance = 0; }
+    else { balance = Math.max(0, balance - amortizationValue); }
+    totalInterest += interest;
+    totalPayment += payment;
+    schedule.push({ month, payment, interest, amortization: amortizationValue, balance });
+  }
+  return { schedule, totalInterest, totalPayment, totalMonths };
+}
+
+async function calculateCredit(event) {
+  if (event) event.preventDefault();
+  const amount = Number(document.querySelector("#creditAmount")?.value ?? 0);
+  const rate = Number(document.querySelector("#creditRate")?.value ?? 0);
+  const ratePeriod = document.querySelector("#creditRatePeriod")?.value;
+  const rateType = document.querySelector("#creditRateType")?.value;
+  const index = document.querySelector("#creditIndex")?.value;
+  const amortization = document.querySelector("#creditAmortization")?.value;
+  const months = Number(document.querySelector("#creditMonths")?.value ?? 1);
+  const grace = Number(document.querySelector("#creditGrace")?.value ?? 0);
+  const extension = Number(document.querySelector("#creditExtension")?.value ?? 0);
+  const iof = Number(document.querySelector("#creditIof")?.value ?? 0);
+  const fees = Number(document.querySelector("#creditFees")?.value ?? 0);
+  const insurance = Number(document.querySelector("#creditInsurance")?.value ?? 0);
+  const customSchedule = parseCustomSchedule(document.querySelector("#creditCustomSchedule")?.value ?? "");
+  if (amount <= 0 || months <= 0) { document.querySelector("#creditResult").innerHTML = `<p class="warning">Informe valor e prazo validos para simular o credito.</p>`; return; }
+  const payload = { amount, rate, rate_period: ratePeriod, rate_type: rateType, index, amortization, months, grace, extension, iof, fees, insurance, custom_schedule: amortization === "personalizada" ? customSchedule : [] };
+  try {
+    const result = await request("/credit/simulate", { method: "POST", body: JSON.stringify(payload) });
+    const shortSchedule = result.schedule.slice(0, 6).map((item) => `<tr><td>${item.month}</td><td>${currency.format(item.payment)}</td><td>${currency.format(item.interest)}</td><td>${currency.format(item.amortization)}</td><td>${currency.format(item.balance)}</td></tr>`).join("");
+    document.querySelector("#creditResult").innerHTML = `
+      <div class="result-grid">
+        <div><strong>Valor financiado</strong><span>${currency.format(result.amount)}</span></div>
+        <div><strong>Custo IOF</strong><span>${currency.format(result.iof_cost)}</span></div>
+        <div><strong>Tarifas + seguros</strong><span>${currency.format(result.fees + result.insurance)}</span></div>
+        <div><strong>Taxa efetiva mensal</strong><span>${result.monthly_rate.toFixed(4)}%</span></div>
+        <div><strong>Taxa efetiva anual</strong><span>${result.effective_annual_rate.toFixed(2)}%</span></div>
+        <div><strong>CET anual estimado</strong><span>${result.cet_annual.toFixed(2)}%</span></div>
+        <div><strong>Total de juros</strong><span>${currency.format(result.total_interest)}</span></div>
+        <div><strong>Total pago</strong><span>${currency.format(result.total_payment + result.fees + result.insurance + result.iof_cost)}</span></div>
+        <div><strong>Periodo total</strong><span>${result.total_months} meses</span></div>
+      </div>
+      <div class="result-summary">
+        <p>Simulacao ${result.rate_type === "posfixada" ? "posfixada" : "prefixada"} ${result.amortization} com ${result.grace} meses de carencia e ${result.extension} meses de prorrogacao.</p>
+        <p>IOF calculado conforme Lei 5.143/1966: ${result.iof_base_rate.toFixed(2)}% sobre o valor e ${result.iof_daily_rate.toFixed(4)}% ao dia por ${result.iof_days} dias.</p>
+        <p>O simulador aplica o metodo selecionado e considera custos adicionais para mostrar o CET e a taxa efetiva.</p>
+      </div>
+      <section class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Cronograma de pagamento</p><h2>Primeiros meses</h2></div></div>
+        <div class="table-wrap compact-table"><table><thead><tr><th>Mes</th><th>Parcela</th><th>Juros</th><th>Amortizacao</th><th>Saldo</th></tr></thead><tbody>${shortSchedule}</tbody></table></div>
+      </section>
+    `;
+  } catch (error) {
+    document.querySelector("#creditResult").innerHTML = `<p class="warning">Erro ao calcular a simulacao. Tente novamente mais tarde.</p>`;
+    console.error(error);
+  }
+}
+
+function renderAssistant() {
+  const analysis = state.analysis;
+  document.querySelector("#moduleContent").innerHTML = `
+    <section class="workspace" style="grid-template-columns: 1fr;">
+      <article class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Pergunta rapida</p><h2>Assistente contextual</h2></div></div>
+        <form id="assistantForm" class="assistant-form">
+          <textarea id="assistantQuestion" rows="4">Como melhorar meu caixa esta semana?</textarea>
+          <button class="primary-button" type="submit">Perguntar</button>
+        </form>
+        <p id="assistantAnswer" class="ai-answer">Pronto para analisar.</p>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><div><p class="eyebrow">Execucao</p><h2>Acoes recomendadas</h2></div></div>
+        <ul id="alerts" class="signal-list"></ul>
+        <div id="actions" class="decision-list compact-list"></div>
+      </article>
+    </section>
+  `;
+  renderAlerts(analysis.alertas);
+  renderActions(analysis.proximas_acoes);
+  document.querySelector("#assistantForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const question = document.querySelector("#assistantQuestion").value.trim();
+    await askAssistant(question || "Como melhorar meu caixa?", "#assistantAnswer");
+  });
+  wireDynamicButtons();
+}
+
+function renderChart(series) {
+  const maxAbs = Math.max(...series.map((item) => Math.abs(item.fluxo)), 1);
+  const chart = document.querySelector("#chart");
+  if (!chart) return;
+  chart.innerHTML = series.map((item) => {
+    const height = Math.max(14, Math.round((Math.abs(item.fluxo) / maxAbs) * 100));
+    const negative = item.fluxo < 0 ? " negative" : "";
+    const day = item.data ? item.data.slice(8, 10) : "";
+    return `<button class="bar${negative}" style="height:${height}%" title="${item.descricao}: ${currency.format(item.fluxo)}"><span>${day}</span></button>`;
+  }).join("");
+}
+
+function renderChips(summary, categories) {
+  const topCategory = categories[0]?.categoria ?? "Sem categoria";
+  document.querySelector("#chips").innerHTML = [
+    `Previsto e realizado: ${currency.format(summary.entradas + summary.saidas)}`,
+    `Top categoria: ${topCategory}`,
+    `Score: ${summary.score_credito}/100`,
+  ].map((label) => `<span class="chip">${label}</span>`).join("");
+}
+
+function renderAlerts(alerts) {
+  const target = document.querySelector("#alerts");
+  if (!target) return;
+  const items = alerts.length ? alerts : [{ titulo: "Operacao saudavel", mensagem: "Nao ha risco de NCG negativa na projecao atual." }];
+  target.innerHTML = items.map((item) => `<li><strong>${item.titulo}</strong><span>${item.mensagem}</span></li>`).join("");
+}
+
+function renderActions(actions) {
+  const target = document.querySelector("#actions");
+  if (!target) return;
+  target.innerHTML = actions.map((item) => `
+    <article class="decision-item">
+      <div class="decision-details">
+        <div><strong>${item.acao}</strong><span>${item.impacto} - ${item.prazo}</span></div>
+        <p class="action-simulation">${item.simulacao}</p>
+      </div>
+      <div class="decision-actions">
+        <button type="button" class="help-icon" data-help="${item.help ?? "Mais informacoes sobre esta acao"}" title="Mais informacoes">?</button>
+        <button data-action="execute-action" title="Executar acao">-></button>
+      </div>
+    </article>
+  `).join("");
+}
+
+function openHelp(content, title = "Explicacao") {
+  const helpModal = document.querySelector("#helpModal");
+  const helpTitle = document.querySelector("#helpTitle");
+  const helpContent = document.querySelector("#helpContent");
+  if (!helpModal || !helpTitle || !helpContent) return;
+  helpTitle.textContent = title;
+  helpContent.textContent = content;
+  helpModal.classList.add("visible");
+}
+
+function closeHelp() {
+  const helpModal = document.querySelector("#helpModal");
+  if (!helpModal) return;
+  helpModal.classList.remove("visible");
+}
+
+async function askAssistant(question, targetSelector) {
+  const target = document.querySelector(targetSelector);
+  if (target) target.textContent = "Analisando...";
+  const result = await request("/assistente", { method: "POST", body: JSON.stringify({ pergunta: question, dados: state.data }) });
+  if (target) target.textContent = result.resposta;
+}
+
+function executeQuickAction(action) {
+  const actions = {
+    "solve-cash": ["dashboard", "Fila de decisoes priorizada para resolver o caixa de hoje."],
+    collect: ["cashflow", "Clientes a cobrar filtrados na linha do tempo financeira."],
+    "simulate-credit": ["credit", "Simulador de credito aberto com dados do caixa atual."],
+    "export-accounting": ["assistant", "Relatorio contabil preparado para envio em PDF."],
+    "new-entry": ["cashflow", "Formulario de novo movimento sera o proximo passo deste modulo."],
+    "credit-report": ["credit", "Relatorio de score e NCG pronto para banco ou socio."],
+    "execute-action": [state.view, "Acao marcada para execucao."],
+  };
+  const [view, message] = actions[action] ?? [state.view, "Acao executada."];
+  renderView(view);
+  showToast(message);
+}
+
+function showToast(message) {
+  const toast = document.querySelector("#toast");
+  toast.textContent = message;
+  toast.classList.add("visible");
+  window.clearTimeout(showToast.timer);
+  showToast.timer = window.setTimeout(() => toast.classList.remove("visible"), 2600);
+}
+
+function wireDynamicButtons() {
+  document.querySelectorAll("#moduleContent [data-view]").forEach((button) => { button.addEventListener("click", () => renderView(button.dataset.view)); });
+  document.querySelectorAll("#moduleContent [data-action]").forEach((button) => { button.addEventListener("click", () => executeQuickAction(button.dataset.action)); });
+  document.querySelectorAll("#moduleContent [data-help]").forEach((button) => { button.addEventListener("click", () => openHelp(button.dataset.help)); });
+  document.querySelectorAll("[data-period]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-period]").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+      showToast(`Periodo selecionado: ${button.textContent}`);
+    });
+  });
+}
+
+function renderOpenFinanceBanks() {
+  const target = document.querySelector("#openFinanceBanks");
+  if (!target) return;
+  if (!state.participants.length) { target.innerHTML = `<span class="privacy-note">Carregando instituicoes participantes...</span>`; return; }
+  target.innerHTML = state.participants.map((bank, index) => `
+    <label class="bank-option">
+      <input type="checkbox" name="institution" value="${bank.id}" ${index === 0 ? "checked" : ""} />
+      <span><strong>${bank.nome}</strong><small>${bank.tipo} - ${bank.dados_disponiveis.join(", ")}</small></span>
+    </label>
+  `).join("");
+}
+
+function openOpenFinanceModal() {
+  const modal = document.querySelector("#openFinanceModal");
+  modal.classList.add("visible");
+  modal.setAttribute("aria-hidden", "false");
+  renderOpenFinanceBanks();
+  if (!state.participants.length) { loadOpenFinanceParticipants().catch((error) => console.error(error)); }
+}
+
+function closeOpenFinanceModal() {
+  const modal = document.querySelector("#openFinanceModal");
+  modal.classList.remove("visible");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function submitOpenFinanceConsent(event) {
+  event.preventDefault();
+  const institutions = [...document.querySelectorAll('input[name="institution"]:checked')].map((item) => item.value);
+  const scopes = [...document.querySelectorAll('input[name="scope"]:checked')].map((item) => item.value);
+  const mode = document.querySelector("#openFinanceMode").value;
+  if (!institutions.length) { showToast("Selecione ao menos uma instituicao para integrar."); return; }
+  let result;
+  try {
+    result = await request("/open-finance/consentimentos", {
+      method: "POST",
+      body: JSON.stringify({ instituicoes: institutions, escopos: scopes, modo: mode, prazo_dias: Number(document.querySelector("#openFinanceTerm").value), finalidade: "gestao financeira empresarial no Finance Flow Pro" }),
+    });
+  } catch (error) {
+    console.warn("Endpoint Open Finance indisponivel, usando integracao local de demonstracao.", error);
+    result = { instituicoes: institutions.map((id) => ({ id })), movimentos_importados: institutions.flatMap((id) => fallbackOpenFinanceMovements[id] ?? []) };
+  }
+  state.openFinanceData = mergeMovements(state.openFinanceData, result.movimentos_importados);
+  closeOpenFinanceModal();
+  await refreshAnalysis({ silent: true });
+  showToast(`${result.instituicoes.length} instituicao(oes) integrada(s) via Open Finance.`);
+}
+
+function mergeMovements(current, incoming) {
+  const byKey = new Map();
+  [...current, ...incoming].forEach((item) => { byKey.set(`${item.data}-${item.descricao}-${item.valor}`, item); });
+  return [...byKey.values()];
+}
+
+document.querySelectorAll("[data-view]").forEach((button) => { button.addEventListener("click", () => renderView(button.dataset.view)); });
+document.querySelectorAll(".quick-actions [data-action]").forEach((button) => { button.addEventListener("click", () => executeQuickAction(button.dataset.action)); });
+document.querySelector("#openFinanceButton").addEventListener("click", () => { openOpenFinanceModal(); });
+document.querySelector("#closeOpenFinance").addEventListener("click", closeOpenFinanceModal);
+document.querySelector("#openFinanceModal").addEventListener("click", (event) => { if (event.target.id === "openFinanceModal") closeOpenFinanceModal(); });
+document.querySelector("#openFinanceForm").addEventListener("submit", submitOpenFinanceConsent);
+document.querySelectorAll("[data-help]").forEach((button) => { button.addEventListener("click", () => openHelp(button.dataset.help)); });
+document.querySelector("#closeHelpModal").addEventListener("click", closeHelp);
+document.querySelector("#helpModal").addEventListener("click", (event) => { if (event.target.id === "helpModal") closeHelp(); });
+loadDashboard().catch((error) => { document.querySelector("#moduleContent").innerHTML = `<article class="panel">Nao foi possivel carregar a API. Rode python -m uvicorn api_full:app --reload.</article>`; console.error(error); });
+  </script>
+</body>
+</html>"""
