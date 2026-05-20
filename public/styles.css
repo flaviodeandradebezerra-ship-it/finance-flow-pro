@@ -132,6 +132,19 @@ h2 {
   gap: 10px;
 }
 
+.sync-status {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--muted);
+  background: #fbfdfc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 .primary-button,
 .secondary-button {
   min-height: 42px;
@@ -494,7 +507,8 @@ label {
 }
 
 input,
-textarea {
+textarea,
+select {
   width: 100%;
   padding: 12px;
   color: var(--ink);
@@ -506,6 +520,62 @@ textarea {
 
 textarea {
   resize: vertical;
+}
+
+fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+legend {
+  padding: 0 6px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.check-row,
+.bank-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--ink);
+}
+
+.check-row input,
+.bank-option input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.bank-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.bank-option {
+  padding: 12px;
+  background: #fbfdfc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.bank-option span {
+  display: grid;
+  gap: 4px;
+}
+
+.bank-option small,
+.privacy-note {
+  color: var(--muted);
+}
+
+.privacy-note {
+  margin-bottom: 0;
+  line-height: 1.45;
 }
 
 .result-box {
@@ -551,6 +621,39 @@ textarea {
   transform: translateY(0);
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(23 35 31 / 54%);
+}
+
+.modal-backdrop.visible {
+  display: flex;
+}
+
+.modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 820px);
+  overflow: auto;
+  padding: 22px;
+  background: var(--panel);
+  border-radius: 8px;
+  box-shadow: 0 24px 90px rgb(0 0 0 / 28%);
+}
+
+.consent-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding-left: 22px;
+  color: var(--muted);
+}
+
 @media (max-width: 920px) {
   .rail {
     display: none;
@@ -569,6 +672,10 @@ textarea {
   .top-actions {
     justify-content: flex-start;
     margin-top: 18px;
+  }
+
+  .sync-status {
+    width: 100%;
   }
 
   .quick-actions,

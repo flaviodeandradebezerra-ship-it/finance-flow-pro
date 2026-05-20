@@ -11,6 +11,21 @@ const fallbackData = [
   { data: "2026-05-28", descricao: "Impostos previstos", tipo: "saida", valor: 8100, categoria: "Impostos", previsto: true },
 ];
 
+const fallbackOpenFinanceMovements = {
+  "banco-brasil": [
+    { data: "2026-05-06", descricao: "OF Banco do Brasil - saldo conta PJ", tipo: "entrada", valor: 12200, categoria: "Open Finance" },
+    { data: "2026-05-17", descricao: "OF Banco do Brasil - tarifa bancaria", tipo: "saida", valor: 180, categoria: "Tarifas" },
+  ],
+  itau: [
+    { data: "2026-05-09", descricao: "OF Itau - recebiveis cartao", tipo: "entrada", valor: 15700, categoria: "Receita" },
+    { data: "2026-05-19", descricao: "OF Itau - parcela capital de giro", tipo: "saida", valor: 2400, categoria: "Credito" },
+  ],
+  nubank: [
+    { data: "2026-05-11", descricao: "OF Nubank - vendas online", tipo: "entrada", valor: 8900, categoria: "Receita" },
+    { data: "2026-05-20", descricao: "OF Nubank - assinatura SaaS", tipo: "saida", valor: 620, categoria: "Tecnologia" },
+  ],
+};
+
 const moduleMeta = {
   dashboard: {
     eyebrow: "Painel executivo",
@@ -36,8 +51,13 @@ const moduleMeta = {
 
 const state = {
   view: "dashboard",
+  baseData: fallbackData,
+  openFinanceData: [],
   data: fallbackData,
   analysis: null,
+  participants: [],
+  syncTimer: null,
+  lastSyncAt: null,
 };
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -57,18 +77,62 @@ async function request(path, options = {}) {
 
 async function loadDashboard() {
   try {
-    state.data = await request("/demo/dados");
+    state.baseData = await request("/demo/dados");
   } catch (error) {
     console.warn("Usando dados locais de fallback.", error);
-    state.data = fallbackData;
+    state.baseData = fallbackData;
   }
 
+  await refreshAnalysis({ silent: true });
+  await loadOpenFinanceParticipants();
+  startAutoSync();
+}
+
+async function refreshAnalysis(options = {}) {
+  state.data = [...state.baseData, ...state.openFinanceData];
   state.analysis = await request("/analise", {
     method: "POST",
     body: JSON.stringify(state.data),
   });
+  state.lastSyncAt = new Date();
+  updateSyncStatus();
 
   renderView(state.view);
+  if (!options.silent) {
+    showToast("Informacoes atualizadas automaticamente.");
+  }
+}
+
+function startAutoSync() {
+  window.clearInterval(state.syncTimer);
+  state.syncTimer = window.setInterval(() => {
+    refreshAnalysis({ silent: true }).catch((error) => console.error("Falha na sincronizacao automatica", error));
+  }, 12000);
+}
+
+function updateSyncStatus() {
+  const target = document.querySelector("#syncStatus");
+  if (!target) return;
+
+  const time = state.lastSyncAt
+    ? state.lastSyncAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : "--:--";
+  target.textContent = `Sincronizacao automatica ativa - ${time}`;
+}
+
+async function loadOpenFinanceParticipants() {
+  try {
+    const result = await request("/open-finance/participantes");
+    state.participants = result.participantes;
+  } catch (error) {
+    console.error("Falha ao carregar participantes Open Finance", error);
+    state.participants = [
+      { id: "banco-brasil", nome: "Banco do Brasil", tipo: "Obrigatorio", dados_disponiveis: ["saldos", "extratos"] },
+      { id: "itau", nome: "Itau", tipo: "Obrigatorio", dados_disponiveis: ["saldos", "extratos", "credito"] },
+      { id: "nubank", nome: "Nubank", tipo: "Participante", dados_disponiveis: ["saldos", "extratos"] },
+    ];
+  }
+  renderOpenFinanceBanks();
 }
 
 function renderView(view) {
@@ -456,6 +520,92 @@ function wireDynamicButtons() {
   });
 }
 
+function renderOpenFinanceBanks() {
+  const target = document.querySelector("#openFinanceBanks");
+  if (!target) return;
+
+  if (!state.participants.length) {
+    target.innerHTML = `<span class="privacy-note">Carregando instituicoes participantes...</span>`;
+    return;
+  }
+
+  target.innerHTML = state.participants
+    .map(
+      (bank, index) => `
+        <label class="bank-option">
+          <input type="checkbox" name="institution" value="${bank.id}" ${index === 0 ? "checked" : ""} />
+          <span>
+            <strong>${bank.nome}</strong>
+            <small>${bank.tipo} - ${bank.dados_disponiveis.join(", ")}</small>
+          </span>
+        </label>
+      `,
+    )
+    .join("");
+}
+
+function openOpenFinanceModal() {
+  const modal = document.querySelector("#openFinanceModal");
+  modal.classList.add("visible");
+  modal.setAttribute("aria-hidden", "false");
+  renderOpenFinanceBanks();
+  if (!state.participants.length) {
+    loadOpenFinanceParticipants().catch((error) => console.error(error));
+  }
+}
+
+function closeOpenFinanceModal() {
+  const modal = document.querySelector("#openFinanceModal");
+  modal.classList.remove("visible");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function submitOpenFinanceConsent(event) {
+  event.preventDefault();
+
+  const institutions = [...document.querySelectorAll('input[name="institution"]:checked')].map((item) => item.value);
+  const scopes = [...document.querySelectorAll('input[name="scope"]:checked')].map((item) => item.value);
+  const mode = document.querySelector("#openFinanceMode").value;
+
+  if (!institutions.length) {
+    showToast("Selecione ao menos uma instituicao para integrar.");
+    return;
+  }
+
+  let result;
+  try {
+    result = await request("/open-finance/consentimentos", {
+      method: "POST",
+      body: JSON.stringify({
+        instituicoes: institutions,
+        escopos: scopes,
+        modo: mode,
+        prazo_dias: Number(document.querySelector("#openFinanceTerm").value),
+        finalidade: "gestao financeira empresarial no Finance Flow Pro",
+      }),
+    });
+  } catch (error) {
+    console.warn("Endpoint Open Finance indisponivel, usando integracao local de demonstracao.", error);
+    result = {
+      instituicoes: institutions.map((id) => ({ id })),
+      movimentos_importados: institutions.flatMap((id) => fallbackOpenFinanceMovements[id] ?? []),
+    };
+  }
+
+  state.openFinanceData = mergeMovements(state.openFinanceData, result.movimentos_importados);
+  closeOpenFinanceModal();
+  await refreshAnalysis({ silent: true });
+  showToast(`${result.instituicoes.length} instituicao(oes) integrada(s) via Open Finance.`);
+}
+
+function mergeMovements(current, incoming) {
+  const byKey = new Map();
+  [...current, ...incoming].forEach((item) => {
+    byKey.set(`${item.data}-${item.descricao}-${item.valor}`, item);
+  });
+  return [...byKey.values()];
+}
+
 document.querySelectorAll("[data-view]").forEach((button) => {
   button.addEventListener("click", () => renderView(button.dataset.view));
 });
@@ -464,14 +614,15 @@ document.querySelectorAll(".quick-actions [data-action]").forEach((button) => {
   button.addEventListener("click", () => executeQuickAction(button.dataset.action));
 });
 
-document.querySelector("#refreshButton").addEventListener("click", async () => {
-  await loadDashboard();
-  showToast("Painel atualizado com dados da API.");
+document.querySelector("#openFinanceButton").addEventListener("click", () => {
+  openOpenFinanceModal();
 });
 
-document.querySelector("#openFinanceButton").addEventListener("click", () => {
-  showToast("Conector Open Finance preparado para ativacao.");
+document.querySelector("#closeOpenFinance").addEventListener("click", closeOpenFinanceModal);
+document.querySelector("#openFinanceModal").addEventListener("click", (event) => {
+  if (event.target.id === "openFinanceModal") closeOpenFinanceModal();
 });
+document.querySelector("#openFinanceForm").addEventListener("submit", submitOpenFinanceConsent);
 
 loadDashboard().catch((error) => {
   document.querySelector("#moduleContent").innerHTML = `

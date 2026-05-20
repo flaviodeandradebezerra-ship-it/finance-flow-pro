@@ -11,10 +11,12 @@ Plataforma de inteligencia financeira, contabil e credito para PMEs, com foco em
 ## O que mudou
 
 - Dashboard executivo em uma tela: caixa, NCG, score de credito, runway, fluxo previsto/realizado e fila de decisoes.
+- Atualizacao automatica do painel, sem botao manual de refresh.
 - Acoes rapidas para os fluxos mais frequentes: novo movimento, Open Finance, cobrar clientes, simular credito e enviar relatorio ao contador.
 - API sem dependencia pesada para a demo, com validacao de movimentos, serie de fluxo, alertas, proximas acoes, score de credito e dados demo.
 - Copiloto financeiro com resposta orientada a acao, nao apenas relatorio.
 - Benchmark documentado para posicionar o produto contra Conta Azul, QuickBooks Advanced e Pluggy/Open Finance.
+- Fluxo Open Finance com consentimento, selecao individual ou em lote, escopos de dados, prazo e integracao automatica ao painel.
 
 ## Benchmark de mercado
 
@@ -29,6 +31,12 @@ Plataforma de inteligencia financeira, contabil e credito para PMEs, com foco em
 3. Radar de anomalias: identifica gasto fora do padrao, fornecedor duplicado, imposto alto e receita recorrente em risco.
 4. Modo gestor e modo contador: mesma informacao em linguagem diferente para reduzir suporte e retrabalho.
 5. Relatorio de NCG pronto para banco, socio ou contador em um clique.
+
+## Open Finance
+
+O fluxo implementado segue a jornada oficial: consentimento, autenticacao e confirmacao pelo usuario, com dados, prazo, finalidade e instituicao transmissora discriminados.
+
+Nesta versao publica, a integracao usa dados demonstrativos retornados pela API do projeto para simular o retorno autorizado. Para operar em producao com dados bancarios reais, o produto precisa estar conectado a uma instituicao/provedor participante do Open Finance Brasil, com credenciais, redirecionamento de autenticacao e homologacao conforme as regras do Banco Central e da Estrutura de Governanca.
 
 ## Endpoints principais
 

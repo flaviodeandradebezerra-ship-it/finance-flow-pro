@@ -35,6 +35,14 @@ class AssistenteRequest(BaseModel):
     dados: list[Movimento] = Field(default_factory=list)
 
 
+class OpenFinanceConsent(BaseModel):
+    instituicoes: list[str] = Field(min_length=1)
+    escopos: list[str] = Field(default_factory=lambda: ["saldos", "extratos"])
+    modo: Literal["individual", "lote"] = "individual"
+    prazo_dias: int = Field(default=180, ge=1, le=365)
+    finalidade: str = Field(default="gestao financeira empresarial")
+
+
 DEMO_DADOS = [
     {"data": "2026-05-01", "descricao": "Vendas Pix", "tipo": "entrada", "valor": 42000, "categoria": "Receita"},
     {"data": "2026-05-03", "descricao": "Boleto cliente A", "tipo": "entrada", "valor": 18000, "categoria": "Receita"},
@@ -45,6 +53,52 @@ DEMO_DADOS = [
     {"data": "2026-05-24", "descricao": "Recebimento previsto", "tipo": "entrada", "valor": 26000, "categoria": "Receita", "previsto": True},
     {"data": "2026-05-28", "descricao": "Impostos previstos", "tipo": "saida", "valor": 8100, "categoria": "Impostos", "previsto": True},
 ]
+
+OPEN_FINANCE_PARTICIPANTES = [
+    {
+        "id": "banco-brasil",
+        "nome": "Banco do Brasil",
+        "tipo": "Obrigatorio",
+        "dados_disponiveis": ["saldos", "extratos", "cartoes", "credito"],
+    },
+    {
+        "id": "itau",
+        "nome": "Itau",
+        "tipo": "Obrigatorio",
+        "dados_disponiveis": ["saldos", "extratos", "cartoes", "credito", "investimentos"],
+    },
+    {
+        "id": "nubank",
+        "nome": "Nubank",
+        "tipo": "Participante",
+        "dados_disponiveis": ["saldos", "extratos", "cartoes"],
+    },
+    {
+        "id": "santander",
+        "nome": "Santander",
+        "tipo": "Obrigatorio",
+        "dados_disponiveis": ["saldos", "extratos", "cartoes", "credito"],
+    },
+]
+
+OPEN_FINANCE_MOVIMENTOS = {
+    "banco-brasil": [
+        {"data": "2026-05-06", "descricao": "OF Banco do Brasil - saldo conta PJ", "tipo": "entrada", "valor": 12200, "categoria": "Open Finance"},
+        {"data": "2026-05-17", "descricao": "OF Banco do Brasil - tarifa bancaria", "tipo": "saida", "valor": 180, "categoria": "Tarifas"},
+    ],
+    "itau": [
+        {"data": "2026-05-09", "descricao": "OF Itau - recebiveis cartao", "tipo": "entrada", "valor": 15700, "categoria": "Receita"},
+        {"data": "2026-05-19", "descricao": "OF Itau - parcela capital de giro", "tipo": "saida", "valor": 2400, "categoria": "Credito"},
+    ],
+    "nubank": [
+        {"data": "2026-05-11", "descricao": "OF Nubank - vendas online", "tipo": "entrada", "valor": 8900, "categoria": "Receita"},
+        {"data": "2026-05-20", "descricao": "OF Nubank - assinatura SaaS", "tipo": "saida", "valor": 620, "categoria": "Tecnologia"},
+    ],
+    "santander": [
+        {"data": "2026-05-13", "descricao": "OF Santander - conciliacao Pix", "tipo": "entrada", "valor": 6300, "categoria": "Receita"},
+        {"data": "2026-05-21", "descricao": "OF Santander - aluguel maquina", "tipo": "saida", "valor": 350, "categoria": "Operacional"},
+    ],
+}
 
 
 def _to_movimentos(dados: list[Movimento]) -> list[Movimento]:
@@ -198,6 +252,49 @@ def status() -> dict[str, Any]:
 @app.get("/demo/dados")
 def demo_dados() -> list[dict[str, Any]]:
     return DEMO_DADOS
+
+
+@app.get("/api/open-finance/participantes")
+@app.get("/open-finance/participantes")
+def open_finance_participantes() -> dict[str, Any]:
+    return {
+        "participantes": OPEN_FINANCE_PARTICIPANTES,
+        "regras_consentimento": [
+            "O cliente escolhe a instituicao receptora e a transmissora dos dados.",
+            "O consentimento deve informar finalidade, prazo, instituicao e dados compartilhados.",
+            "A autenticacao e a confirmacao ocorrem em canal eletronico da instituicao transmissora.",
+            "O cliente pode cancelar o compartilhamento a qualquer momento.",
+        ],
+    }
+
+
+@app.post("/api/open-finance/consentimentos")
+@app.post("/open-finance/consentimentos")
+def open_finance_consentimento(payload: OpenFinanceConsent) -> dict[str, Any]:
+    participantes_validos = {item["id"] for item in OPEN_FINANCE_PARTICIPANTES}
+    invalidos = [item for item in payload.instituicoes if item not in participantes_validos]
+    if invalidos:
+        raise HTTPException(status_code=400, detail=f"Instituicoes invalidas: {', '.join(invalidos)}")
+
+    movimentos = [
+        movimento
+        for instituicao in payload.instituicoes
+        for movimento in OPEN_FINANCE_MOVIMENTOS.get(instituicao, [])
+    ]
+
+    return {
+        "consentimento_id": f"of-{date.today().isoformat()}-{len(payload.instituicoes)}",
+        "status": "autorizado",
+        "modo": payload.modo,
+        "prazo_dias": payload.prazo_dias,
+        "finalidade": payload.finalidade,
+        "escopos": payload.escopos,
+        "instituicoes": [
+            item for item in OPEN_FINANCE_PARTICIPANTES if item["id"] in payload.instituicoes
+        ],
+        "movimentos_importados": movimentos,
+        "mensagem": "Consentimento registrado e dados integrados ao painel financeiro.",
+    }
 
 
 @app.post("/api/analise")
