@@ -398,12 +398,13 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def web_app() -> Union[HTMLResponse, dict]:
+def web_app() -> HTMLResponse:
     if INDEX_CACHE:
         # Replace asset paths in the HTML
         html = INDEX_CACHE.replace("/assets/", "/api/assets/")
         return HTMLResponse(content=html)
-    return status()
+    # Fallback if index.html not found
+    return HTMLResponse(content="<h1>Finance Flow Pro</h1><p>Loading...</p>")
 
 
 @app.get("/api/status")
