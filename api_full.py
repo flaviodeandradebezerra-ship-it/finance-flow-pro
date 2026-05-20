@@ -25,13 +25,22 @@ PUBLIC_DIR = os.path.join(_CURRENT_DIR, "public")
 if not os.path.isdir(PUBLIC_DIR):
     PUBLIC_DIR = os.path.join(os.path.dirname(_CURRENT_DIR), "public")
 
+# Debug: print path resolution
+print(f"[DEBUG] _CURRENT_DIR: {_CURRENT_DIR}")
+print(f"[DEBUG] PUBLIC_DIR: {PUBLIC_DIR}")
+print(f"[DEBUG] PUBLIC_DIR exists: {os.path.isdir(PUBLIC_DIR)}")
+
 # Lê o index.html na inicialização
 INDEX_CACHE = None
+INDEX_PATH = os.path.join(PUBLIC_DIR, "index.html")
+print(f"[DEBUG] INDEX_PATH: {INDEX_PATH}")
+print(f"[DEBUG] INDEX_PATH exists: {os.path.isfile(INDEX_PATH)}")
 try:
-    with open(os.path.join(PUBLIC_DIR, "index.html"), "r", encoding="utf-8") as f:
+    with open(INDEX_PATH, "r", encoding="utf-8") as f:
         INDEX_CACHE = f.read()
+        print(f"[DEBUG] INDEX_CACHE loaded, size: {len(INDEX_CACHE)}")
 except Exception as e:
-    print(f"Warning: Could not load index.html: {e}")
+    print(f"[DEBUG] Error loading index.html: {e}")
 
 # Monta arquivos estáticos em /api/assets (não-conflitante)
 # Comentado por enquanto para debug
