@@ -2,6 +2,12 @@
 
 Plataforma de inteligencia financeira, contabil e credito para PMEs, com foco em poucos cliques e decisao rapida.
 
+## Links
+
+- Producao Vercel: https://financeflowprofull.vercel.app
+- API publica: https://financeflowprofull.vercel.app/api/status
+- Repositorio GitHub: https://github.com/flaviodeandradebezerra-ship-it/finance-flow-pro
+
 ## O que mudou
 
 - Dashboard executivo em uma tela: caixa, NCG, score de credito, runway, fluxo previsto/realizado e fila de decisoes.
