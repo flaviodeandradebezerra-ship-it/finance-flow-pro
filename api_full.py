@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -17,10 +17,18 @@ app = FastAPI(
 
 # Resolve o caminho da pasta public de forma confiável
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
+INDEX_FILE = os.path.join(PUBLIC_DIR, "index.html")
 
-# Monta arquivos estáticos na raiz
+# Função para servir o index.html
+def get_index_html() -> HTMLResponse:
+    if os.path.isfile(INDEX_FILE):
+        with open(INDEX_FILE, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Finance Flow Pro</h1>", status_code=200)
+
+# Monta arquivos estáticos
 if os.path.isdir(PUBLIC_DIR):
-    app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="public")
+    app.mount("/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
 
 
 class Movimento(BaseModel):
@@ -379,6 +387,11 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
     }
 
 
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def web_app() -> HTMLResponse:
+    return get_index_html()
+
+
 @app.get("/api/status")
 @app.get("/status")
 def root() -> dict[str, Any]:
@@ -395,6 +408,15 @@ def status() -> dict[str, Any]:
             "benchmark setorial e score de credito",
         ],
     }
+
+
+# Catch-all route para servir index.html para SPA routing
+@app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)
+def catch_all(full_path: str) -> HTMLResponse:
+    # Ignora requisições para /api
+    if full_path.startswith("api"):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return get_index_html()
 
 
 @app.get("/api/demo/dados")
