@@ -375,13 +375,6 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
     }
 
 
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def web_app_root() -> HTMLResponse:
-    index_file = os.path.join(PUBLIC_DIR, "index.html")
-    if os.path.isfile(index_file):
-        with open(index_file, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h1>Finance Flow Pro</h1>")
 
 
 @app.get("/api/status")
