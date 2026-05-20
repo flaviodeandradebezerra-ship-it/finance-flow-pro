@@ -17,18 +17,6 @@ app = FastAPI(
 
 # Resolve o caminho da pasta public de forma confiável
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
-INDEX_FILE = os.path.join(PUBLIC_DIR, "index.html")
-
-# Função para servir o index.html
-def get_index_html() -> HTMLResponse:
-    if os.path.isfile(INDEX_FILE):
-        with open(INDEX_FILE, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h1>Finance Flow Pro</h1>", status_code=200)
-
-# Monta arquivos estáticos
-if os.path.isdir(PUBLIC_DIR):
-    app.mount("/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
 
 
 class Movimento(BaseModel):
@@ -388,8 +376,12 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def web_app() -> HTMLResponse:
-    return get_index_html()
+def web_app_root() -> HTMLResponse:
+    index_file = os.path.join(PUBLIC_DIR, "index.html")
+    if os.path.isfile(index_file):
+        with open(index_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Finance Flow Pro</h1>")
 
 
 @app.get("/api/status")
@@ -408,17 +400,6 @@ def status() -> dict[str, Any]:
             "benchmark setorial e score de credito",
         ],
     }
-
-
-# Catch-all route para servir index.html para SPA routing
-@app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)
-def catch_all(full_path: str) -> HTMLResponse:
-    # Ignora requisições para /api
-    if full_path.startswith("api"):
-        raise HTTPException(status_code=404, detail="Not Found")
-    return get_index_html()
-
-
 @app.get("/api/demo/dados")
 @app.get("/demo/dados")
 def demo_dados() -> list[dict[str, Any]]:
@@ -530,3 +511,9 @@ def assistente_financeiro(payload: AssistenteRequest) -> dict[str, Any]:
         "contexto": resumo,
         "proximas_acoes": analise_atual["proximas_acoes"],
     }
+
+
+# Mount static files on the root path - MUST be last!
+# This serves index.html for SPA routing and handles 404s
+if os.path.isdir(PUBLIC_DIR):
+    app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="static")
