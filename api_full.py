@@ -34,8 +34,9 @@ except Exception as e:
     print(f"Warning: Could not load index.html: {e}")
 
 # Monta arquivos estáticos em /api/assets (não-conflitante)
-if os.path.isdir(PUBLIC_DIR):
-    app.mount("/api/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
+# Comentado por enquanto para debug
+# if os.path.isdir(PUBLIC_DIR):
+#     app.mount("/api/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
 
 
 class Movimento(BaseModel):
