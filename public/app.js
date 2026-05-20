@@ -340,22 +340,23 @@ function renderCredit() {
           </div>
         </div>
         <form id="creditForm" class="form-grid">
-          <label>Valor desejado<input id="creditAmount" type="number" min="1000" value="25000" step="100" /></label>
-          <label>Taxa nominal (%)<input id="creditRate" type="number" min="0" step="0.01" value="2.4" /></label>
-          <label>Periodicidade da taxa<select id="creditRatePeriod"><option value="monthly">Mensal</option><option value="annual">Anual</option></select></label>
-          <label>Prefixada / Posfixada<select id="creditRateType"><option value="prefixada">Prefixada</option><option value="posfixada">Posfixada</option></select></label>
-          <label>Indice de correcao<select id="creditIndex"><option value="none">Sem indice</option><option value="ipca">IPCA</option><option value="igpm">IGP-M</option><option value="tr">TR</option><option value="poupanca">Poupanca</option><option value="selic">Selic</option><option value="cdi">CDI</option><option value="legal">Taxa legal</option></select></label>
-          <label>Amortizacao<select id="creditAmortization"><option value="price">Price</option><option value="sac">SAC</option><option value="estruturada">Estruturada</option><option value="personalizada">Personalizada</option></select></label>
+          <label>Valor desejado <button type="button" class="help-icon" data-help="Informe o montante que voce deseja financiar. Ex: R$ 25.000 para capital de giro ou investimento." title="Ajuda sobre valor desejado">?</button><input id="creditAmount" type="number" min="1000" value="25000" step="100" /></label>
+          <label>Taxa nominal (%) <button type="button" class="help-icon" data-help="Defina a taxa contratada pelo credito. Pode ser mensal ou anual, conforme o contrato." title="Ajuda sobre taxa nominal">?</button><input id="creditRate" type="number" min="0" step="0.01" value="2.4" /></label>
+          <label>Periodicidade da taxa <button type="button" class="help-icon" data-help="Escolha se a taxa informada e mensal ou anual. Ex: 2,4% mensal ou 28% anual." title="Ajuda sobre periodicidade">?</button><select id="creditRatePeriod"><option value="monthly">Mensal</option><option value="annual">Anual</option></select></label>
+          <label>Prefixada / Posfixada <button type="button" class="help-icon" data-help="Prefixada: taxa fixa no periodo. Posfixada: taxa acrescida de indice de correcao." title="Ajuda sobre tipo de taxa">?</button><select id="creditRateType"><option value="prefixada">Prefixada</option><option value="posfixada">Posfixada</option></select></label>
+          <label>Indice de correcao <button type="button" class="help-icon" data-help="Seleciona o indice que corrige o saldo devedor, como IPCA, TR, Selic ou CDI." title="Ajuda sobre indice de correcao">?</button><select id="creditIndex"><option value="none">Sem indice</option><option value="ipca">IPCA</option><option value="igpm">IGP-M</option><option value="tr">TR</option><option value="poupanca">Poupanca</option><option value="selic">Selic</option><option value="cdi">CDI</option><option value="legal">Taxa legal</option></select></label>
+          <label>Amortizacao <button type="button" class="help-icon" data-help="Escolha o sistema de amortizacao. Price = parcela fixa, SAC = amortizacao constante, Personalizada = parcela definida por voce." title="Ajuda sobre amortizacao">?</button><select id="creditAmortization"><option value="price">Price</option><option value="sac">SAC</option><option value="estruturada">Estruturada</option><option value="personalizada">Personalizada</option></select></label>
           <div id="customScheduleRow" style="display:none;">
-            <label>Parcelas personalizadas (R$ separados por vírgula)<textarea id="creditCustomSchedule" rows="3" placeholder="Ex: 2500, 2600, 2700, 2800"></textarea></label>
+            <label>Parcelas personalizadas (R$ separados por vírgula) <button type="button" class="help-icon" data-help="Informe as parcelas previstas para cada mes. Ex: 2500, 2600, 2700." title="Ajuda sobre parcelas personalizadas">?</button><textarea id="creditCustomSchedule" rows="3" placeholder="Ex: 2500, 2600, 2700, 2800"></textarea></label>
             <p class="field-note">Informe os pagamentos por mês. Se vazio, o simulador usa uma trajectória de amortização similar ao Price.</p>
           </div>
-          <label>Prazo de amortizacao (meses)<input id="creditMonths" type="number" min="1" value="12" /></label>
-          <label>Carencia (meses)<input id="creditGrace" type="number" min="0" value="0" /></label>
-          <label>Prorrogacao (meses)<input id="creditExtension" type="number" min="0" value="0" /></label>
-          <label>IOF (% do valor)<input id="creditIof" type="number" min="0" step="0.01" value="0.38" /></label>
-          <label>Tarifas (R$)<input id="creditFees" type="number" min="0" step="1" value="200" /></label>
-          <label>Seguros (R$)<input id="creditInsurance" type="number" min="0" step="1" value="350" /></label>
+          <label>Prazo de amortizacao (meses) <button type="button" class="help-icon" data-help="Defina quantos meses o credito vai durar. Ex: 12, 24 ou 36 meses." title="Ajuda sobre prazo">?</button><input id="creditMonths" type="number" min="1" value="12" /></label>
+          <label>Carencia (meses) <button type="button" class="help-icon" data-help="Tempo em que voce paga apenas juros ou fica sem pagamento. Ex: 3 meses de carencia." title="Ajuda sobre carencia">?</button><input id="creditGrace" type="number" min="0" value="0" /></label>
+          <label>Prorrogacao (meses) <button type="button" class="help-icon" data-help="Tempo extra para pagar apos o prazo original do credito." title="Ajuda sobre prorrogacao">?</button><input id="creditExtension" type="number" min="0" value="0" /></label>
+          <label>IOF base (% do valor) <button type="button" class="help-icon" data-help="IOF aplicado sobre o valor do emprestimo conforme a Lei 5.143/1966: 0,38% + 0,0082% ao dia." title="Ajuda sobre IOF">?</button><input id="creditIof" type="number" min="0" step="0.01" value="0.38" /></label>
+          <p class="field-note">Cálculo conforme Lei 5.143/1966: 0,38% + 0,0082% ao dia sobre o saldo devedor.</p>
+          <label>Tarifas (R$) <button type="button" class="help-icon" data-help="Inclua aqui custos bancarios e tarifas administrativas relacionados ao credito." title="Ajuda sobre tarifas">?</button><input id="creditFees" type="number" min="0" step="1" value="200" /></label>
+          <label>Seguros (R$) <button type="button" class="help-icon" data-help="Planeje seguros obrigatorios ou facultativos atrelados ao credito." title="Ajuda sobre seguros">?</button><input id="creditInsurance" type="number" min="0" step="1" value="350" /></label>
           <button class="primary-button" type="submit">Calcular</button>
         </form>
         <div id="creditResult" class="result-box"></div>
@@ -515,6 +516,7 @@ async function calculateCredit(event) {
       </div>
       <div class="result-summary">
         <p>Simulacao ${result.rate_type === "posfixada" ? "posfixada" : "prefixada"} ${result.amortization} com ${result.grace} meses de carencia e ${result.extension} meses de prorrogacao.</p>
+        <p>IOF calculado conforme Lei 5.143/1966: ${result.iof_base_rate.toFixed(2)}% sobre o valor e ${result.iof_daily_rate.toFixed(4)}% ao dia por ${result.iof_days} dias.</p>
         <p>${result.amortization === "personalizada" ? "Personalizada: use este modelo para examinar uma jornada de pagamento diferente. A simulacao aqui usa um fluxo similar ao Price quando nao ha parcelas customizadas." : "O simulador aplica o metodo selecionado e considera custos adicionais para mostrar o CET e a taxa efetiva."}</p>
       </div>
       <section class="panel">
@@ -626,12 +628,38 @@ function renderActions(actions) {
     .map(
       (item) => `
         <article class="decision-item">
-          <div><strong>${item.acao}</strong><span>${item.impacto} - ${item.prazo}</span></div>
-          <button data-action="execute-action" title="Executar acao">-></button>
+          <div class="decision-details">
+            <div>
+              <strong>${item.acao}</strong>
+              <span>${item.impacto} - ${item.prazo}</span>
+            </div>
+            <p class="action-simulation">${item.simulacao}</p>
+          </div>
+          <div class="decision-actions">
+            <button type="button" class="help-icon" data-help="${item.help ?? "Mais informacoes sobre esta acao"}" title="Mais informacoes">?</button>
+            <button data-action="execute-action" title="Executar acao">-></button>
+          </div>
         </article>
       `,
     )
     .join("");
+}
+
+function openHelp(content, title = "Explicacao") {
+  const helpModal = document.querySelector("#helpModal");
+  const helpTitle = document.querySelector("#helpTitle");
+  const helpContent = document.querySelector("#helpContent");
+  if (!helpModal || !helpTitle || !helpContent) return;
+
+  helpTitle.textContent = title;
+  helpContent.textContent = content;
+  helpModal.classList.add("visible");
+}
+
+function closeHelp() {
+  const helpModal = document.querySelector("#helpModal");
+  if (!helpModal) return;
+  helpModal.classList.remove("visible");
 }
 
 async function askAssistant(question, targetSelector) {
@@ -677,6 +705,10 @@ function wireDynamicButtons() {
 
   document.querySelectorAll("#moduleContent [data-action]").forEach((button) => {
     button.addEventListener("click", () => executeQuickAction(button.dataset.action));
+  });
+
+  document.querySelectorAll("#moduleContent [data-help]").forEach((button) => {
+    button.addEventListener("click", () => openHelp(button.dataset.help));
   });
 
   document.querySelectorAll("[data-period]").forEach((button) => {
@@ -791,6 +823,15 @@ document.querySelector("#openFinanceModal").addEventListener("click", (event) =>
   if (event.target.id === "openFinanceModal") closeOpenFinanceModal();
 });
 document.querySelector("#openFinanceForm").addEventListener("submit", submitOpenFinanceConsent);
+
+document.querySelectorAll("[data-help]").forEach((button) => {
+  button.addEventListener("click", () => openHelp(button.dataset.help));
+});
+
+document.querySelector("#closeHelpModal").addEventListener("click", closeHelp);
+document.querySelector("#helpModal").addEventListener("click", (event) => {
+  if (event.target.id === "helpModal") closeHelp();
+});
 
 loadDashboard().catch((error) => {
   document.querySelector("#moduleContent").innerHTML = `

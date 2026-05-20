@@ -148,7 +148,10 @@ def _simulate_credit(payload: CreditSimulationRequest) -> dict[str, Any]:
     monthly_rate = nominal_rate if payload.rate_period == "monthly" else pow(1 + nominal_rate, 1 / 12) - 1
     index_rate = _credit_index_rate(payload.index)
     effective_monthly_rate = monthly_rate + (index_rate if payload.rate_type == "posfixada" else 0)
-    iof_cost = payload.amount * (payload.iof / 100)
+    total_days = (payload.months + payload.extension) * 30
+    iof_base_cost = payload.amount * (payload.iof / 100)
+    iof_daily_cost = payload.amount * 0.000082 * total_days
+    iof_cost = round(iof_base_cost + iof_daily_cost, 2)
     schedule_info = _build_credit_schedule(
         payload.amount,
         effective_monthly_rate,
@@ -158,14 +161,17 @@ def _simulate_credit(payload: CreditSimulationRequest) -> dict[str, Any]:
         payload.extension,
         payload.custom_schedule if payload.custom_schedule else None,
     )
-    total_cost = schedule_info["total_interest"] + payload.fees + payload.insurance + round(iof_cost, 2)
-    total_amount_paid = schedule_info["total_payment"] + payload.fees + payload.insurance + round(iof_cost, 2)
+    total_cost = schedule_info["total_interest"] + payload.fees + payload.insurance + iof_cost
+    total_amount_paid = schedule_info["total_payment"] + payload.fees + payload.insurance + iof_cost
     effective_annual_rate = round((pow(1 + effective_monthly_rate, 12) - 1) * 100, 2)
     cet_annual = round((pow(1 + total_cost / payload.amount, 12 / schedule_info["total_months"]) - 1) * 100, 2) if payload.amount and schedule_info["total_months"] else 0.0
 
     return {
         "amount": payload.amount,
         "iof_cost": round(iof_cost, 2),
+        "iof_days": total_days,
+        "iof_base_rate": payload.iof,
+        "iof_daily_rate": 0.0082,
         "fees": payload.fees,
         "insurance": payload.insurance,
         "monthly_rate": round(effective_monthly_rate * 100, 4),
@@ -325,21 +331,28 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
             }
         )
 
+    estimativa_cobranca = min(entradas * 0.15, ncg + 4000) if entradas else 0
     proximas_acoes = [
         {
             "acao": "Cobrar recebiveis vencidos",
             "impacto": "Aumenta caixa sem contratar credito",
             "prazo": "Hoje",
+            "simulacao": f"Estimativa de {_moeda(estimativa_cobranca)} liberados em ate 7 dias com cobranca ativa.",
+            "help": "Cobrar clientes em atraso reduz a necessidade de credito. Ex: um recebimento adicional de 5 mil em 7 dias pode diminuir o risco de NCG.",
         },
         {
             "acao": "Simular antecipacao parcial",
             "impacto": f"Cobre ate {_moeda(ncg)} de necessidade de giro" if ncg else "Compara custo de credito com folga de caixa atual",
             "prazo": "24h",
+            "simulacao": "Mostra se a antecipacao de recebiveis custa menos que um novo emprestimo e quanto ela reduz a NCG.",
+            "help": "Antecipar recebiveis ajuda a por o caixa em dia. Ex: antecipar 20% de vendas previstas pode pagar despesas imediatas com menor custo que credito novo.",
         },
         {
             "acao": "Revisar Top despesas",
             "impacto": "Reduz saidas recorrentes com poucos cliques",
             "prazo": "Esta semana",
+            "simulacao": "Estima economia de 10% nas maiores despesas recorrentes para melhorar o fluxo de caixa.",
+            "help": "Reduzir despesas recorrentes melhora o resultado sem contrair mais dividas. Ex: cortar 10% em marketing ou aluguel aumenta o caixa imediatamente.",
         },
     ]
 

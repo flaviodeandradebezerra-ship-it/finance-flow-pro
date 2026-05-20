@@ -267,6 +267,45 @@ h2 {
   border-radius: 8px;
 }
 
+.help-icon {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  color: var(--green);
+  background: var(--green-soft);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.help-icon:hover {
+  background: #e6f5ee;
+}
+
+.help-content {
+  padding: 10px 0;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.decision-details {
+  display: grid;
+  gap: 6px;
+}
+
+.decision-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-simulation {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .chart {
   display: flex;
   min-height: 236px;

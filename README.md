@@ -17,6 +17,7 @@ Plataforma de inteligencia financeira, contabil e credito para PMEs, com foco em
 - API sem dependencia pesada para a demo, com validacao de movimentos, serie de fluxo, alertas, proximas acoes, score de credito e dados demo.
 - Endpoint de simulacao de credito `/api/credit/simulate` para calcular CET, taxa efetiva, cronograma e custos totais.
 - Suporte a amortizacao personalizada com cronograma de pagamentos definidos pelo usuario.
+- IOF calculado conforme Lei 5.143/1966 (0,38% + 0,0082% ao dia sobre o saldo devedor).
 - Copiloto financeiro com resposta orientada a acao, nao apenas relatorio.
 - Benchmark documentado para posicionar o produto contra Conta Azul, QuickBooks Advanced e Pluggy/Open Finance.
 - Fluxo Open Finance com consentimento, selecao individual ou em lote, escopos de dados, prazo e integracao automatica ao painel.
