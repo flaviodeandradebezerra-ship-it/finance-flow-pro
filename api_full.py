@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal
@@ -14,10 +15,12 @@ app = FastAPI(
     version="2.0.0",
 )
 
-PUBLIC_DIR = Path(__file__).parent / "public"
+# Resolve o caminho da pasta public de forma confiável
+PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
 
-if PUBLIC_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=PUBLIC_DIR), name="assets")
+# Monta arquivos estáticos na raiz
+if os.path.isdir(PUBLIC_DIR):
+    app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="public")
 
 
 class Movimento(BaseModel):
@@ -374,14 +377,6 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
         "categorias": por_categoria,
         "serie_fluxo": serie_fluxo,
     }
-
-
-@app.get("/", include_in_schema=False, response_model=None)
-def web_app():
-    index = PUBLIC_DIR / "index.html"
-    if index.exists():
-        return FileResponse(index)
-    return status()
 
 
 @app.get("/api/status")

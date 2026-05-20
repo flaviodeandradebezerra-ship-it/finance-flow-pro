@@ -6,16 +6,8 @@
       "dest": "api/index.py"
     },
     {
-      "src": "/assets/.*",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "/.*\\.(?:js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$",
-      "dest": "/public/$1"
-    },
-    {
       "src": "/.*",
-      "dest": "/public/index.html"
+      "dest": "api/index.py"
     }
   ]
 }
