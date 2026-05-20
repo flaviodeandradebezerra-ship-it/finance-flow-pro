@@ -1,7 +1,7 @@
 import os
 from datetime import date
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Union
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
@@ -397,7 +397,7 @@ def _analise_core(dados: list[Movimento]) -> dict[str, Any]:
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def web_app() -> HTMLResponse | dict:
+def web_app() -> Union[HTMLResponse, dict]:
     if INDEX_CACHE:
         # Replace asset paths in the HTML
         html = INDEX_CACHE.replace("/assets/", "/api/assets/")
